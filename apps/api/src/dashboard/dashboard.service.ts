@@ -20,8 +20,7 @@ export class DashboardService {
         this.db.task.count({
           where: { tenantId, status: { in: ["PENDING", "IN_PROGRESS"] } },
         }),
-        // placeholder until purchase module exists
-        Promise.resolve(0),
+        this.db.purchaseOrder.count({ where: { tenantId, status: "PENDING" } }),
       ]);
 
     const today = salesEntries[0] ?? null;

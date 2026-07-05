@@ -11,8 +11,8 @@ const NAV = [
   { href: "/tasks",     label: "Tareas",                icon: IconCheck },
   { href: "/rrhh",      label: "RRHH",                  icon: IconUsers },
   { href: "/inventario",label: "Inventario",             icon: IconBox },
-  { href: "/compras",   label: "Compras",                icon: IconCart,   disabled: true },
-  { href: "/proveedores",label: "Proveedores",           icon: IconTruck,  disabled: true },
+  { href: "/compras",   label: "Compras",                icon: IconCart },
+  { href: "/proveedores",label: "Proveedores",           icon: IconTruck },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

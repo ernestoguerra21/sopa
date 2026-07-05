@@ -20,6 +20,8 @@ model Tenant {
   salesEntry  SalesEntry[]
   alerts      Alert[]
   inventory   InventoryItem[]
+  suppliers   Supplier[]
+  orders      PurchaseOrder[]
 }
 
 model InventoryItem {
@@ -33,6 +35,7 @@ model InventoryItem {
   updatedAt   DateTime @updatedAt
 
   tenant      Tenant @relation(fields: [tenantId], references: [id])
+  orderItems  PurchaseOrderItem[]
 
   @@index([tenantId])
 }
@@ -143,4 +146,56 @@ enum AlertType {
   OVERDUE_TASK
   PENDING_ORDER
   CONTRACT_EXPIRING
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String?
+  phone     String?
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  orders    PurchaseOrder[]
+
+  @@index([tenantId])
+}
+
+model PurchaseOrder {
+  id         String            @id @default(cuid())
+  status     PurchaseOrderStatus @default(PENDING)
+  notes      String?
+  tenantId   String
+  supplierId String
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  items      PurchaseOrderItem[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrderItem {
+  id              String  @id @default(cuid())
+  name            String
+  quantity        Float
+  unit            String
+  orderId         String
+  inventoryItemId String?
+
+  order           PurchaseOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+
+  @@index([orderId])
 }

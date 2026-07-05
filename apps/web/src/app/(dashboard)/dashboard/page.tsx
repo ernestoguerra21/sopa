@@ -77,7 +77,8 @@ export default function DashboardPage() {
         <MetricCard delay={4} label="Personal activo" value={summary ? String(summary.activeEmployees) : null} color="blue" icon={<IconUsers />} />
         <MetricCard delay={5} label="Tareas pendientes" value={summary ? String(summary.pendingTasks) : null}
           color={summary && summary.pendingTasks > 2 ? "amber" : "green"} icon={<IconCheck />} />
-        <MetricCard delay={6} label="Compras pendientes" value={null} emptyLabel="Próximamente" color="muted" icon={<IconCart />} />
+        <MetricCard delay={6} label="Compras pendientes" value={summary ? String(summary.pendingOrders) : null}
+          emptyLabel="Sin pedidos" color={summary && summary.pendingOrders > 0 ? "amber" : "green"} icon={<IconCart />} />
       </div>
 
       {/* Lower grid */}

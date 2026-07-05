@@ -126,6 +126,35 @@ async function main() {
     ],
   });
 
+  const existingSuppliers = await db.supplier.count({ where: { tenantId: tenant.id } });
+  if (existingSuppliers === 0) {
+    await db.supplier.createMany({
+      data: [
+        { name: "Distribuciones Ibérica", contact: "Manolo Pérez", phone: "600111222", tenantId: tenant.id },
+        { name: "Frescos del Mercado",     contact: "Rosa Díaz",   phone: "600333444", tenantId: tenant.id },
+        { name: "Bodegas del Sur",         contact: "Iván Cortés", phone: "600555666", tenantId: tenant.id },
+      ],
+    });
+
+    const iberica = await db.supplier.findFirst({ where: { tenantId: tenant.id, name: "Distribuciones Ibérica" } });
+    const aceite = await db.inventoryItem.findFirst({ where: { tenantId: tenant.id, name: "Aceite de oliva" } });
+    const tomate = await db.inventoryItem.findFirst({ where: { tenantId: tenant.id, name: "Tomate triturado" } });
+
+    await db.purchaseOrder.create({
+      data: {
+        tenantId: tenant.id,
+        supplierId: iberica!.id,
+        status: "PENDING",
+        items: {
+          create: [
+            { name: "Aceite de oliva", quantity: 20, unit: "L",  inventoryItemId: aceite?.id },
+            { name: "Tomate triturado", quantity: 15, unit: "kg", inventoryItemId: tomate?.id },
+          ],
+        },
+      },
+    });
+  }
+
   console.log("Seed completado — tenant:", tenant.slug);
 }
 

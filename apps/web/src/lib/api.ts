@@ -63,6 +63,22 @@ export const api = {
       request(`/inventory/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/inventory/${id}`, { method: "DELETE" }),
   },
+  suppliers: {
+    list: () => request<Supplier[]>("/suppliers"),
+    create: (data: { name: string; contact?: string; phone?: string }) =>
+      request<Supplier>("/suppliers", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Pick<Supplier, "name" | "contact" | "phone">>) =>
+      request(`/suppliers/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    remove: (id: string) => request(`/suppliers/${id}`, { method: "DELETE" }),
+  },
+  purchaseOrders: {
+    list: () => request<PurchaseOrder[]>("/purchase-orders"),
+    create: (data: { supplierId: string; notes?: string; items: { name: string; quantity: number; unit: string; inventoryItemId?: string }[] }) =>
+      request<PurchaseOrder>("/purchase-orders", { method: "POST", body: JSON.stringify(data) }),
+    receive: (id: string) => request(`/purchase-orders/${id}/receive`, { method: "PATCH" }),
+    cancel: (id: string) => request(`/purchase-orders/${id}/cancel`, { method: "PATCH" }),
+    remove: (id: string) => request(`/purchase-orders/${id}`, { method: "DELETE" }),
+  },
 };
 
 export interface Employee {
@@ -117,5 +133,31 @@ export interface Task {
   dueDate?: string;
   assigneeId?: string;
   assignee?: { id: string; name: string } | null;
+  createdAt: string;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contact?: string | null;
+  phone?: string | null;
+  createdAt: string;
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  inventoryItemId?: string | null;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  status: "PENDING" | "RECEIVED" | "CANCELLED";
+  notes?: string | null;
+  supplierId: string;
+  supplier: Supplier;
+  items: PurchaseOrderItem[];
   createdAt: string;
 }
