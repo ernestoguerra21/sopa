@@ -53,9 +53,9 @@ export default function InventarioPage() {
   const fmtQty = (n: number) => n % 1 === 0 ? n.toString() : n.toFixed(1);
 
   return (
-    <div style={{ maxWidth: "760px", margin: "0 auto", padding: "32px 28px" }}>
+    <div className="page-container" style={{ maxWidth: "760px", margin: "0 auto" }}>
       {/* Header */}
-      <div className="animate-fade-up delay-0" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px" }}>
+      <div className="animate-fade-up delay-0 page-header" style={{ marginBottom: "28px" }}>
         <div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.4px" }}>Inventario</h1>
           <p style={{ fontSize: "13px", color: lowCount > 0 ? "var(--amber)" : "var(--text-muted)", marginTop: "4px" }}>
@@ -114,9 +114,9 @@ export default function InventarioPage() {
           {items.map((item, i) => {
             const low = item.quantity <= item.minQuantity;
             return (
-              <div key={item.id} className={`glass animate-fade-up delay-${Math.min(i, 5)}`}
+              <div key={item.id} className={`glass inv-row animate-fade-up delay-${Math.min(i, 5)}`}
                 style={{
-                  display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px",
+                  padding: "14px 16px",
                   ...(low ? { borderColor: "rgba(245,158,11,0.3)" } : {}),
                 }}>
                 {/* Low-stock indicator */}
@@ -127,7 +127,7 @@ export default function InventarioPage() {
                 }} />
 
                 {/* Body */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="inv-body">
                   <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>{item.name}</div>
                   <div style={{ fontSize: "12px", color: low ? "var(--amber)" : "var(--text-muted)", marginTop: "2px" }}>
                     {low ? `Bajo mínimo (${fmtQty(item.minQuantity)} ${item.unit})` : `Mínimo: ${fmtQty(item.minQuantity)} ${item.unit}`}

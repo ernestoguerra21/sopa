@@ -19,6 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router   = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -26,7 +27,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     else setUser(stored);
   }, [router]);
 
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+
   function logout() { clearSession(); router.push("/login"); }
+
+  const currentLabel = NAV.find(n => n.href === pathname)?.label ?? "SOPA";
 
   return (
     <div style={{ position: "relative", display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -37,11 +42,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="blob blob-3" />
       </div>
 
+      {/* Mobile backdrop */}
+      <div className={`sidebar-backdrop${menuOpen ? " open" : ""}`} onClick={() => setMenuOpen(false)} />
+
       {/* Sidebar */}
-      <aside className="animate-slide-right" style={{
-        position: "relative", zIndex: 10,
-        width: "220px", flexShrink: 0,
-        display: "flex", flexDirection: "column",
+      <aside className={`app-sidebar${menuOpen ? " open" : ""}`} style={{
         background: "rgba(5,5,15,0.7)",
         backdropFilter: "blur(40px) saturate(180%)",
         WebkitBackdropFilter: "blur(40px) saturate(180%)",
@@ -80,22 +85,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div style={{ fontSize: "10px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 8px 8px" }}>
             Módulos
           </div>
-          {NAV.map(({ href, label, icon: Icon, disabled }) => {
+          {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
-                href={disabled ? "#" : href}
-                className={`nav-item${active ? " active" : ""}${disabled ? " disabled" : ""}`}
-                onClick={disabled ? (e) => e.preventDefault() : undefined}
+                href={href}
+                className={`nav-item${active ? " active" : ""}`}
               >
                 <Icon size={15} />
                 <span style={{ flex: 1, fontSize: "13px" }}>{label}</span>
-                {disabled && (
-                  <span style={{ fontSize: "9px", background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", borderRadius: "4px", padding: "2px 5px", letterSpacing: "0.04em" }}>
-                    Próx.
-                  </span>
-                )}
               </Link>
             );
           })}
@@ -117,8 +116,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 1 }}>
-        {children}
+      <main style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
+        <div className="mobile-topbar">
+          <button className="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Abrir menú">
+            <IconMenu size={18} />
+          </button>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>{currentLabel}</span>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -145,4 +152,7 @@ function IconTruck({ size = 16 }: { size?: number }) {
 }
 function IconLogout({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
+}
+function IconMenu({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
 }

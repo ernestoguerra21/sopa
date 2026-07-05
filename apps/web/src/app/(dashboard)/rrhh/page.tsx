@@ -38,9 +38,9 @@ export default function RrhhPage() {
   const active = employees.filter(e => e.status === "ACTIVE").length;
 
   return (
-    <div style={{ maxWidth: "760px", margin: "0 auto", padding: "32px 28px" }}>
+    <div className="page-container" style={{ maxWidth: "760px", margin: "0 auto" }}>
       {/* Header */}
-      <div className="animate-fade-up delay-0" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px" }}>
+      <div className="animate-fade-up delay-0 page-header" style={{ marginBottom: "28px" }}>
         <div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.4px" }}>Equipo</h1>
           <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>{active} activos de {employees.length}</p>

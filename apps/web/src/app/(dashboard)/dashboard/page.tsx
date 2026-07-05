@@ -53,7 +53,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div style={{ maxWidth: "960px", margin: "0 auto", padding: "32px 28px" }}>
+    <div className="page-container" style={{ maxWidth: "960px", margin: "0 auto" }}>
       {/* Header */}
       <div className="animate-fade-up delay-0" style={{ marginBottom: "32px" }}>
         <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "6px" }}>
@@ -65,7 +65,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Metric grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" }}>
+      <div className="metrics-grid" style={{ marginBottom: "24px" }}>
         <MetricCard delay={1} label="Ventas del día" value={summary?.hasEntry ? fmt(summary.sales) : null} emptyLabel="Sin datos" color="green" icon={<IconTrend />}
           action={<button onClick={() => setSalesModal(true)} style={{ marginTop: "10px", fontSize: "11px", color: "var(--accent-soft)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: "4px" }}>
             <span style={{ fontSize: "14px" }}>+</span> {summary?.hasEntry ? "Actualizar" : "Introducir ventas"}
@@ -82,7 +82,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Lower grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+      <div className="lower-grid">
         {/* Alerts */}
         <div className="animate-fade-up delay-3">
           <SectionHeader label="Alertas" count={alerts.length} countColor="var(--amber)" />
