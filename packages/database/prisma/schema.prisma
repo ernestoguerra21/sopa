@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  employees   Employee[]
+  tasks       Task[]
+  salesEntry  SalesEntry[]
+  alerts      Alert[]
+  inventory   InventoryItem[]
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  name        String
+  unit        String
+  quantity    Float    @default(0)
+  minQuantity Float    @default(0)
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(MANAGER)
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  tasks     Task[] @relation("AssignedTasks")
+
+  @@index([tenantId])
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  SUPERVISOR
+}
+
+model Employee {
+  id         String          @id @default(cuid())
+  name       String
+  position   String
+  status     EmployeeStatus  @default(ACTIVE)
+  tenantId   String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  priority    Priority   @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+  dueDate     DateTime?
+  tenantId    String
+  assigneeId  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tenant      Tenant  @relation(fields: [tenantId], references: [id])
+  assignee    User?   @relation("AssignedTasks", fields: [assigneeId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+model SalesEntry {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  sales       Float
+  expenses    Float    @default(0)
+  notes       String?
+  tenantId    String
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([date])
+}
+
+model Alert {
+  id         String    @id @default(cuid())
+  type       AlertType
+  message    String
+  dismissed  Boolean   @default(false)
+  tenantId   String
+  createdAt  DateTime  @default(now())
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([dismissed])
+}
+
+enum AlertType {
+  LOW_STOCK
+  OVERDUE_TASK
+  PENDING_ORDER
+  CONTRACT_EXPIRING
+}

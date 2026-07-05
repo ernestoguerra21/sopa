@@ -1,0 +1,20 @@
+{
+  "name": "sopa",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm --filter database build && pnpm --filter api build && pnpm --filter web build",
+    "db:generate": "pnpm --filter database generate",
+    "db:migrate": "pnpm --filter database migrate:dev",
+    "db:seed": "pnpm --filter database seed",
+    "db:studio": "pnpm --filter database studio"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
