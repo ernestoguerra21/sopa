@@ -56,7 +56,7 @@ export default function DashboardPage() {
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "32px 28px" }}>
       {/* Header */}
       <div className="animate-fade-up delay-0" style={{ marginBottom: "32px" }}>
-        <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "6px", capitalize: "capitalize" as any }}>
+        <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "6px" }}>
           {today}
         </div>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px", lineHeight: 1.2 }}>

@@ -5,4 +5,5 @@ dist
 .next
 *.db
 *.db-journal
+*.tsbuildinfo
 prisma/migrations/*/migration.sql
