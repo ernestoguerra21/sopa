@@ -49,11 +49,26 @@ export const api = {
   },
   employees: {
     list: () => request<Employee[]>("/employees"),
-    create: (data: { name: string; position: string }) =>
+    create: (data: EmployeeInput) =>
       request<Employee>("/employees", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Pick<Employee, "name" | "position" | "status">>) =>
+    update: (id: string, data: Partial<EmployeeInput>) =>
       request(`/employees/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/employees/${id}`, { method: "DELETE" }),
+  },
+  departments: {
+    list: () => request<Department[]>("/departments"),
+    create: (data: { name: string; parentId?: string }) =>
+      request<Department>("/departments", { method: "POST", body: JSON.stringify(data) }),
+    remove: (id: string) => request(`/departments/${id}`, { method: "DELETE" }),
+  },
+  timeEntries: {
+    list: (employeeId: string, from?: string, to?: string) => {
+      const params = new URLSearchParams({ employeeId, ...(from ? { from } : {}), ...(to ? { to } : {}) });
+      return request<TimeEntry[]>(`/time-entries?${params}`);
+    },
+    create: (data: { employeeId: string; date: string; hours?: number }) =>
+      request<TimeEntry>("/time-entries", { method: "POST", body: JSON.stringify(data) }),
+    remove: (id: string) => request(`/time-entries/${id}`, { method: "DELETE" }),
   },
   inventory: {
     list: () => request<InventoryItem[]>("/inventory"),
@@ -81,11 +96,44 @@ export const api = {
   },
 };
 
-export interface Employee {
-  id: string;
+export interface EmployeeInput {
   name: string;
   position: string;
+  status?: "ACTIVE" | "INACTIVE";
+  lastName?: string;
+  documentId?: string;
+  birthDate?: string;
+  address?: string;
+  phone?: string;
+  departmentId?: string | null;
+  managerId?: string | null;
+  contractType?: "FIJO" | "TEMPORAL";
+  payRateType?: "POR_HORA" | "POR_DIA" | "MENSUAL_FIJO";
+  payRate?: number;
+  scheduleType?: "FIJO" | "ROTATIVO" | "ABIERTO";
+  scheduleDetail?: { days?: string[]; startTime?: string; endTime?: string } | null;
+}
+
+export interface Employee extends EmployeeInput {
+  id: string;
   status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  department?: { id: string; name: string } | null;
+  manager?: { id: string; name: string } | null;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  parentId?: string | null;
+  _count?: { employees: number };
+}
+
+export interface TimeEntry {
+  id: string;
+  employeeId: string;
+  date: string;
+  hours?: number | null;
   createdAt: string;
 }
 
