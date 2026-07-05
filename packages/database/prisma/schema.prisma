@@ -14,14 +14,23 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  payrollCountry PayrollCountry @default(CUBA)
+
   users       User[]
   employees   Employee[]
+  departments Department[]
   tasks       Task[]
   salesEntry  SalesEntry[]
   alerts      Alert[]
   inventory   InventoryItem[]
   suppliers   Supplier[]
   orders      PurchaseOrder[]
+  timeEntries TimeEntry[]
+}
+
+enum PayrollCountry {
+  CUBA
+  ESPANA
 }
 
 model InventoryItem {
@@ -71,14 +80,87 @@ model Employee {
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id])
+  // Datos personales
+  lastName   String?
+  documentId String?
+  birthDate  DateTime?
+  address    String?
+  phone      String?
+
+  // Organigrama
+  departmentId String?
+  managerId    String?
+
+  // Contrato y salario
+  contractType ContractType?
+  payRateType  PayRateType?
+  payRate      Decimal?
+
+  // Horario (informativo; el cálculo de nómina usa TimeEntry, no esto)
+  scheduleType   ScheduleType?
+  scheduleDetail Json?
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  department  Department? @relation(fields: [departmentId], references: [id])
+  manager     Employee?   @relation("EmployeeManager", fields: [managerId], references: [id])
+  reports     Employee[]  @relation("EmployeeManager")
+  timeEntries TimeEntry[]
 
   @@index([tenantId])
+  @@index([departmentId])
+  @@index([managerId])
 }
 
 enum EmployeeStatus {
   ACTIVE
   INACTIVE
+}
+
+enum ContractType {
+  FIJO
+  TEMPORAL
+}
+
+enum PayRateType {
+  POR_HORA
+  POR_DIA
+  MENSUAL_FIJO
+}
+
+enum ScheduleType {
+  FIJO
+  ROTATIVO
+  ABIERTO
+}
+
+model Department {
+  id       String  @id @default(cuid())
+  name     String
+  tenantId String
+  parentId String?
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  parent    Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children  Department[] @relation("DeptHierarchy")
+  employees Employee[]
+
+  @@index([tenantId])
+  @@index([parentId])
+}
+
+model TimeEntry {
+  id         String   @id @default(cuid())
+  employeeId String
+  tenantId   String
+  date       DateTime
+  hours      Float?
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([employeeId])
+  @@index([tenantId, date])
 }
 
 model Task {
