@@ -227,7 +227,15 @@ export default function NominaPage() {
               Neto a cobrar: {money(isFinite(previewNet) ? previewNet : 0)}
             </div>
             <div style={{ flex: 1 }} />
-            <button onClick={() => printReceipt(editing)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "8px 18px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
+            <button onClick={() => printReceipt({
+              ...editing,
+              grossSalary: fGross || "0",
+              socialSecurityDeduction: fSS || "0",
+              incomeTaxDeduction: fTax || "0",
+              otherDeductions: fOther || "0",
+              totalDeductions: String(Number(fSS) + Number(fTax) + Number(fOther)),
+              netSalary: String(Number(fGross) - (Number(fSS) + Number(fTax) + Number(fOther))),
+            })} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "8px 18px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
               Recibo PDF
             </button>
             <button onClick={save} disabled={saving} className="btn-glow" style={{ padding: "8px 24px", opacity: saving ? 0.6 : 1 }}>
