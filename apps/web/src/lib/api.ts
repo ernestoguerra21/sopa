@@ -96,6 +96,14 @@ export const api = {
     cancel: (id: string) => request(`/purchase-orders/${id}/cancel`, { method: "PATCH" }),
     remove: (id: string) => request(`/purchase-orders/${id}`, { method: "DELETE" }),
   },
+  members: {
+    list: () => request<MembersResponse>("/members"),
+    invite: (data: { name: string; email: string; password: string; organizationRole: string; businessRole?: string }) =>
+      request("/members", { method: "POST", body: JSON.stringify(data) }),
+    updateRoles: (userId: string, data: { organizationRole?: string; businessRole?: string | null }) =>
+      request(`/members/${userId}`, { method: "PATCH", body: JSON.stringify(data) }),
+    remove: (userId: string) => request(`/members/${userId}`, { method: "DELETE" }),
+  },
 };
 
 export interface EmployeeInput {
@@ -158,6 +166,25 @@ export interface User {
   tenant: { id: string; name: string };
   kind: "user" | "employee";
   payRateType?: "POR_HORA" | "POR_DIA" | "MENSUAL_FIJO" | null;
+  organizationRoles?: OrganizationRole[];
+  businessRoles?: BusinessRole[];
+}
+
+export type OrganizationRole = "OWNER" | "ADMIN_ORG" | "FINANCE_MANAGER" | "HR_MANAGER" | "READ_ONLY";
+export type BusinessRole = "MANAGER" | "OPERATIONS_MANAGER" | "INVENTORY_MANAGER" | "SUPERVISOR" | "STAFF" | "READ_ONLY";
+
+export interface Member {
+  userId: string;
+  name: string;
+  email: string;
+  organizationRole: OrganizationRole;
+  businessRole: BusinessRole | null;
+}
+
+export interface MembersResponse {
+  organization: { id: string; name: string };
+  business: { id: string; name: string } | null;
+  members: Member[];
 }
 
 export interface Summary {

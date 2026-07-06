@@ -40,8 +40,8 @@ async function main() {
 
   const organization = await db.organization.upsert({
     where: { slug: "demo-restaurante" },
-    update: {},
-    create: { name: "Restaurante Demo", slug: "demo-restaurante" },
+    update: { tenantId: tenant.id },
+    create: { name: "Restaurante Demo", slug: "demo-restaurante", tenantId: tenant.id },
   });
 
   const business = await db.business.upsert({

@@ -13,6 +13,7 @@ const NAV = [
   { href: "/inventario",label: "Inventario",             icon: IconBox },
   { href: "/compras",   label: "Compras",                icon: IconCart },
   { href: "/proveedores",label: "Proveedores",           icon: IconTruck },
+  { href: "/usuarios",  label: "Usuarios",               icon: IconShield },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -150,6 +151,9 @@ function IconCart({ size = 16 }: { size?: number }) {
 }
 function IconTruck({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+}
+function IconShield({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
 }
 function IconLogout({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;

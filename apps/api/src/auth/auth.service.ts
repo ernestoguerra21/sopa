@@ -41,6 +41,8 @@ export class AuthService {
           role: user.role,
           tenant: { id: user.tenant.id, name: user.tenant.name },
           kind: "user",
+          organizationRoles: payload.organizationRoles,
+          businessRoles: payload.businessRoles,
         },
       };
     }
@@ -86,7 +88,10 @@ export class AuthService {
       };
     }
 
-    const user = await this.db.user.findUnique({ where: { id: reqUser.sub }, include: { tenant: true } });
+    const user = await this.db.user.findUnique({
+      where: { id: reqUser.sub },
+      include: { tenant: true, organizationMemberships: true, businessMemberships: true },
+    });
     if (!user) throw new UnauthorizedException();
     return {
       id: user.id,
@@ -95,6 +100,8 @@ export class AuthService {
       role: user.role,
       tenant: { id: user.tenant.id, name: user.tenant.name },
       kind: "user",
+      organizationRoles: user.organizationMemberships.map(m => m.role),
+      businessRoles: user.businessMemberships.map(m => m.role),
     };
   }
 }
