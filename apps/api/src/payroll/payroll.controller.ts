@@ -4,6 +4,7 @@ import { PermissionsGuard } from "../auth/permissions.guard";
 import { BusinessContextGuard } from "../auth/business-context.guard";
 import { RequirePermissions } from "../auth/require-permissions.decorator";
 import { PayrollService } from "./payroll.service";
+import { UpdatePayrollDto } from "../common/dto";
 
 @Controller("payroll")
 @UseGuards(JwtAuthGuard, BusinessContextGuard, PermissionsGuard)
@@ -53,7 +54,7 @@ export class PayrollController {
   async update(
     @Param("id") id: string,
     @Request() req,
-    @Body() body: { grossSalary?: number; otherDeductions?: number; socialSecurityDeduction?: number; incomeTaxDeduction?: number }
+    @Body() body: UpdatePayrollDto
   ) {
     return this.payroll.update(id, req.user.tenantId, body);
   }

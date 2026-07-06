@@ -314,8 +314,8 @@ enum TaskStatus {
 model SalesEntry {
   id          String   @id @default(cuid())
   date        DateTime @default(now())
-  sales       Float
-  expenses    Float    @default(0)
+  sales       Decimal
+  expenses    Decimal  @default(0)
   notes       String?
   tenantId    String
   businessId  String

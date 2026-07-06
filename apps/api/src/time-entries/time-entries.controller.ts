@@ -4,6 +4,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/permissions.guard";
 import { RequirePermissions } from "../auth/require-permissions.decorator";
 import { TimeEntriesService } from "./time-entries.service";
+import { CreateTimeEntryDto, UpdateTimeEntryDto } from "../common/dto";
 
 @Controller("time-entries")
 @UseGuards(JwtAuthGuard, BusinessContextGuard, PermissionsGuard)
@@ -22,7 +23,7 @@ export class TimeEntriesController {
   }
 
   @Post()
-  create(@Request() req, @Body() body: any) {
+  create(@Request() req, @Body() body: CreateTimeEntryDto) {
     if (req.user.kind !== "employee") {
       throw new ForbiddenException("Solo el trabajador puede fichar su propio horario");
     }
@@ -31,7 +32,7 @@ export class TimeEntriesController {
 
   @Patch(":id")
   @RequirePermissions("hr.manage")
-  update(@Param("id") id: string, @Request() req, @Body() body: any) {
+  update(@Param("id") id: string, @Request() req, @Body() body: UpdateTimeEntryDto) {
     if (req.user.kind === "employee") {
       throw new ForbiddenException("Solo un administrador puede corregir fichajes");
     }

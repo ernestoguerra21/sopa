@@ -10,9 +10,10 @@ import {
   UseGuards,
   Req,
 } from "@nestjs/common";
-import { TimeOffService, CreateTimeOffInput } from "./time-off.service";
+import { TimeOffService } from "./time-off.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { BusinessContextGuard } from "../auth/business-context.guard";
+import { CreateTimeOffDto } from "../common/dto";
 
 @Controller("time-off")
 @UseGuards(JwtAuthGuard, BusinessContextGuard)
@@ -20,7 +21,7 @@ export class TimeOffController {
   constructor(private timeOffService: TimeOffService) {}
 
   @Post()
-  async create(@Req() req: any, @Body() data: CreateTimeOffInput) {
+  async create(@Req() req: any, @Body() data: CreateTimeOffDto) {
     return this.timeOffService.create(req.user.tenantId, req.businessId, data);
   }
 

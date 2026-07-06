@@ -24,13 +24,14 @@ export class DashboardService {
       ]);
 
     const today = salesEntries[0] ?? null;
-    const sales = today?.sales ?? 0;
-    const expenses = today?.expenses ?? 0;
+    // Decimal → number para la respuesta JSON; céntimos exactos redondeando a 2
+    const sales = today ? Number(today.sales) : 0;
+    const expenses = today ? Number(today.expenses) : 0;
 
     return {
       sales,
       expenses,
-      profit: sales - expenses,
+      profit: Math.round((sales - expenses) * 100) / 100,
       activeEmployees,
       pendingTasks,
       pendingOrders,

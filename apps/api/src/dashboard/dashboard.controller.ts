@@ -4,6 +4,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/permissions.guard";
 import { RequirePermissions } from "../auth/require-permissions.decorator";
 import { DashboardService } from "./dashboard.service";
+import { CreateSalesEntryDto } from "../common/dto";
 
 @Controller("dashboard")
 @UseGuards(JwtAuthGuard, BusinessContextGuard, PermissionsGuard)
@@ -32,7 +33,7 @@ export class DashboardController {
   @RequirePermissions("sales.edit")
   createSalesEntry(
     @Request() req,
-    @Body() body: { sales: number; expenses: number; notes?: string },
+    @Body() body: CreateSalesEntryDto,
   ) {
     return this.dashboard.createSalesEntry(req.user.tenantId, req.businessId, body);
   }
