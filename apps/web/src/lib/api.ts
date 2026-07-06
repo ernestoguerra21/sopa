@@ -128,6 +128,23 @@ export const api = {
       request<PayrollRecord>(`/payroll/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/payroll/${id}`, { method: "DELETE" }),
   },
+  timeOff: {
+    create: (data: { employeeId: string; type: string; startDate: string; endDate: string; reason?: string }) =>
+      request<TimeOff>("/time-off", { method: "POST", body: JSON.stringify(data) }),
+    listByEmployee: (employeeId: string, status?: string) => {
+      const params = new URLSearchParams({ employeeId, ...(status ? { status } : {}) });
+      return request<TimeOff[]>(`/time-off?${params}`);
+    },
+    listByBusiness: (status?: string) => {
+      const params = new URLSearchParams({ ...(status ? { status } : {}) });
+      return request<TimeOff[]>(`/time-off?${params}`);
+    },
+    calendar: (month: number, year: number) =>
+      request<{ date: string; employees: { id: string; name: string }[] }[]>(`/time-off/calendar?month=${month}&year=${year}`),
+    approve: (id: string) => request(`/time-off/${id}/approve`, { method: "PATCH" }),
+    reject: (id: string) => request(`/time-off/${id}/reject`, { method: "PATCH" }),
+    remove: (id: string) => request(`/time-off/${id}`, { method: "DELETE" }),
+  },
 };
 
 export interface PayrollRecord {
@@ -146,6 +163,19 @@ export interface PayrollRecord {
     incomeTaxBreakdown: { bracket: string; amount: number }[];
   };
   employee?: { id: string; name: string; position: string; lastName?: string | null; documentId?: string | null };
+}
+
+export interface TimeOff {
+  id: string;
+  employeeId: string;
+  type: "VACATION" | "SICK_LEAVE" | "PERSONAL" | "UNPAID";
+  startDate: string;
+  endDate: string;
+  reason?: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  employee?: { id: string; name: string };
 }
 
 export interface Business {

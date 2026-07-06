@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, Task, TimeEntry, User } from "@/lib/api";
 import { getStoredUser } from "@/lib/auth";
+import { TimeOffRequest } from "@/components/TimeOffRequest";
 
 function monthRange() {
   const now = new Date();
@@ -122,6 +123,8 @@ export default function FicharPage() {
           ))}
         </div>
       )}
+
+      {me && <TimeOffRequest employeeId={me.id} />}
     </div>
   );
 }

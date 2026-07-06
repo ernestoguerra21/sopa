@@ -12,6 +12,7 @@ import { PurchaseOrdersModule } from "./purchase-orders/purchase-orders.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { TasksModule } from "./tasks/tasks.module";
 import { TimeEntriesModule } from "./time-entries/time-entries.module";
+import { TimeOffModule } from "./time-off/time-off.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TimeEntriesModule } from "./time-entries/time-entries.module";
     PurchaseOrdersModule,
     DepartmentsModule,
     TimeEntriesModule,
+    TimeOffModule,
     PayrollModule,
     MembersModule,
     BusinessesModule,
