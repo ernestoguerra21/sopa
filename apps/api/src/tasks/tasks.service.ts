@@ -7,7 +7,13 @@ interface CreateTaskDto {
   priority?: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
   assigneeId?: string;
+  employeeAssigneeId?: string;
 }
+
+const TASK_INCLUDE = {
+  assignee: { select: { id: true, name: true } },
+  employeeAssignee: { select: { id: true, name: true } },
+} as const;
 
 @Injectable()
 export class TasksService {
@@ -16,7 +22,15 @@ export class TasksService {
   findAll(tenantId: string) {
     return this.db.task.findMany({
       where: { tenantId },
-      include: { assignee: { select: { id: true, name: true } } },
+      include: TASK_INCLUDE,
+      orderBy: [{ status: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
+    });
+  }
+
+  findMine(tenantId: string, employeeId: string) {
+    return this.db.task.findMany({
+      where: { tenantId, employeeAssigneeId: employeeId },
+      include: TASK_INCLUDE,
       orderBy: [{ status: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
     });
   }
@@ -31,8 +45,9 @@ export class TasksService {
         status: "PENDING",
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         assigneeId: data.assigneeId,
+        employeeAssigneeId: data.employeeAssigneeId,
       },
-      include: { assignee: { select: { id: true, name: true } } },
+      include: TASK_INCLUDE,
     });
   }
 

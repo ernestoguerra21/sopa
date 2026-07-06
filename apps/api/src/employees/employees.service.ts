@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import * as crypto from "crypto";
 import { PrismaService } from "../prisma/prisma.service";
 
 interface EmployeeInput {
@@ -10,6 +11,8 @@ interface EmployeeInput {
   birthDate?: string;
   address?: string;
   phone?: string;
+  email?: string | null;
+  password?: string;
   departmentId?: string | null;
   managerId?: string | null;
   contractType?: "FIJO" | "TEMPORAL";
@@ -23,8 +26,13 @@ function toPrismaData(data: EmployeeInput) {
   return {
     ...data,
     birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+    email: data.email || undefined,
+    // sin contraseña nueva: no tocar la existente (nunca sobreescribir con string vacío)
+    password: data.password ? crypto.createHash("sha256").update(data.password).digest("hex") : undefined,
   };
 }
+
+const EMPLOYEE_OMIT = { password: true } as const;
 
 @Injectable()
 export class EmployeesService {
@@ -33,6 +41,7 @@ export class EmployeesService {
   findAll(tenantId: string) {
     return this.db.employee.findMany({
       where: { tenantId },
+      omit: EMPLOYEE_OMIT,
       include: {
         department: { select: { id: true, name: true } },
         manager: { select: { id: true, name: true } },
@@ -44,6 +53,7 @@ export class EmployeesService {
   create(tenantId: string, data: { name: string; position: string } & EmployeeInput) {
     return this.db.employee.create({
       data: { tenantId, ...toPrismaData(data) } as any,
+      omit: EMPLOYEE_OMIT,
     });
   }
 

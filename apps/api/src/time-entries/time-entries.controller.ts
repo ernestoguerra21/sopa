@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { TimeEntriesService } from "./time-entries.service";
 
@@ -14,16 +14,31 @@ export class TimeEntriesController {
     @Query("from") from?: string,
     @Query("to") to?: string,
   ) {
-    return this.timeEntries.findAll(req.user.tenantId, employeeId, from, to);
+    const targetEmployeeId = req.user.kind === "employee" ? req.user.employeeId : employeeId;
+    return this.timeEntries.findAll(req.user.tenantId, targetEmployeeId, from, to);
   }
 
   @Post()
   create(@Request() req, @Body() body: any) {
-    return this.timeEntries.create(req.user.tenantId, body);
+    if (req.user.kind !== "employee") {
+      throw new ForbiddenException("Solo el trabajador puede fichar su propio horario");
+    }
+    return this.timeEntries.create(req.user.tenantId, { ...body, employeeId: req.user.employeeId });
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Request() req, @Body() body: any) {
+    if (req.user.kind === "employee") {
+      throw new ForbiddenException("Solo un administrador puede corregir fichajes");
+    }
+    return this.timeEntries.update(id, req.user.tenantId, body);
   }
 
   @Delete(":id")
   remove(@Param("id") id: string, @Request() req) {
+    if (req.user.kind === "employee") {
+      throw new ForbiddenException("Solo un administrador puede eliminar fichajes");
+    }
     return this.timeEntries.remove(id, req.user.tenantId);
   }
 }

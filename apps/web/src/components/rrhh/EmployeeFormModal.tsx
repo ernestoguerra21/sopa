@@ -23,6 +23,8 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
     birthDate: employee?.birthDate?.slice(0, 10) ?? "",
     address: employee?.address ?? "",
     phone: employee?.phone ?? "",
+    email: employee?.email ?? "",
+    password: "",
     departmentId: employee?.departmentId ?? "",
     managerId: employee?.managerId ?? "",
     contractType: employee?.contractType,
@@ -132,6 +134,19 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
               <Field label={`Tarifa (${form.payRateType === "POR_HORA" ? "por hora" : form.payRateType === "POR_DIA" ? "por día" : "mensual"})`}>
                 <input type="number" step="0.01" min="0" className="glass-input" value={form.payRate ?? ""} onChange={e => set("payRate", parseFloat(e.target.value) as any)} />
               </Field>
+            )}
+          </FieldGroup>
+
+          <FieldGroup label="Acceso al fichaje">
+            <Row>
+              <Field label="Email de acceso"><input type="email" className="glass-input" value={form.email} onChange={e => set("email", e.target.value)} placeholder="empleado@ejemplo.com" /></Field>
+              <Field label="Contraseña">
+                <input type="password" className="glass-input" value={form.password} onChange={e => set("password", e.target.value)}
+                  placeholder={employee?.email ? "Dejar en blanco para no cambiar" : "Nueva contraseña"} />
+              </Field>
+            </Row>
+            {form.email && !form.password && !employee?.email && (
+              <p style={{ fontSize: "11px", color: "var(--amber)" }}>Falta la contraseña para activar el acceso.</p>
             )}
           </FieldGroup>
 

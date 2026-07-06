@@ -24,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const stored = getStoredUser();
     if (!stored) router.push("/login");
+    else if (stored.kind === "employee") router.push("/fichar");
     else setUser(stored);
   }, [router]);
 

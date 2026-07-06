@@ -66,8 +66,10 @@ export const api = {
       const params = new URLSearchParams({ employeeId, ...(from ? { from } : {}), ...(to ? { to } : {}) });
       return request<TimeEntry[]>(`/time-entries?${params}`);
     },
-    create: (data: { employeeId: string; date: string; hours?: number }) =>
+    create: (data: { employeeId?: string; date: string; hours?: number }) =>
       request<TimeEntry>("/time-entries", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { date?: string; hours?: number }) =>
+      request(`/time-entries/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/time-entries/${id}`, { method: "DELETE" }),
   },
   inventory: {
@@ -105,6 +107,8 @@ export interface EmployeeInput {
   birthDate?: string;
   address?: string;
   phone?: string;
+  email?: string;
+  password?: string;
   departmentId?: string | null;
   managerId?: string | null;
   contractType?: "FIJO" | "TEMPORAL";
@@ -150,8 +154,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "OWNER" | "MANAGER" | "SUPERVISOR";
+  role: "OWNER" | "MANAGER" | "SUPERVISOR" | "EMPLOYEE";
   tenant: { id: string; name: string };
+  kind: "user" | "employee";
+  payRateType?: "POR_HORA" | "POR_DIA" | "MENSUAL_FIJO" | null;
 }
 
 export interface Summary {
@@ -181,6 +187,8 @@ export interface Task {
   dueDate?: string;
   assigneeId?: string;
   assignee?: { id: string; name: string } | null;
+  employeeAssigneeId?: string;
+  employeeAssignee?: { id: string; name: string } | null;
   createdAt: string;
 }
 

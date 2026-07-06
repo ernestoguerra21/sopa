@@ -20,7 +20,7 @@ export default function LoginPage() {
       const { accessToken, user } = await api.auth.login(email, password);
       saveToken(accessToken);
       saveUser(user);
-      router.push("/dashboard");
+      router.push(user.kind === "employee" ? "/fichar" : "/dashboard");
     } catch (err: any) {
       setError(err.message || "Credenciales incorrectas");
     } finally {

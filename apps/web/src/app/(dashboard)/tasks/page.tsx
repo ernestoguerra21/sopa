@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, Task } from "@/lib/api";
+import { api, Employee, Task } from "@/lib/api";
 
 const STATUS_LABELS: Record<string, string> = { PENDING: "Pendiente", IN_PROGRESS: "En progreso", DONE: "Hecho" };
 type Filter = "ALL" | "PENDING" | "IN_PROGRESS" | "DONE";
 
 export default function TasksPage() {
-  const [tasks,    setTasks]    = useState<Task[]>([]);
+  const [tasks,     setTasks]     = useState<Task[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [creating, setCreating] = useState(false);
   const [filter,   setFilter]   = useState<Filter>("ALL");
-  const [form,     setForm]     = useState({ title: "", priority: "MEDIUM", dueDate: "" });
+  const [form,     setForm]     = useState({ title: "", priority: "MEDIUM", dueDate: "", employeeAssigneeId: "" });
   const [removing, setRemoving] = useState<Set<string>>(new Set());
 
   async function load() {
-    const data = await api.tasks.list();
-    setTasks(data);
+    const [taskData, empData] = await Promise.all([api.tasks.list(), api.employees.list()]);
+    setTasks(taskData);
+    setEmployees(empData);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -24,8 +26,13 @@ export default function TasksPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim()) return;
-    await api.tasks.create({ title: form.title, priority: form.priority as Task["priority"], dueDate: form.dueDate || undefined });
-    setForm({ title: "", priority: "MEDIUM", dueDate: "" });
+    await api.tasks.create({
+      title: form.title,
+      priority: form.priority as Task["priority"],
+      dueDate: form.dueDate || undefined,
+      employeeAssigneeId: form.employeeAssigneeId || undefined,
+    });
+    setForm({ title: "", priority: "MEDIUM", dueDate: "", employeeAssigneeId: "" });
     setCreating(false);
     load();
   }
@@ -106,6 +113,11 @@ export default function TasksPage() {
               <input type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })}
                 className="glass-input" style={{ flex: 1 }} />
             </div>
+            <select value={form.employeeAssigneeId} onChange={e => setForm({ ...form, employeeAssigneeId: e.target.value })}
+              className="glass-input">
+              <option value="">Sin asignar</option>
+              {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name} {emp.lastName ?? ""}</option>)}
+            </select>
             <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
               <button type="button" onClick={() => setCreating(false)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "8px 16px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
                 Cancelar
@@ -150,6 +162,7 @@ export default function TasksPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "6px", flexWrap: "wrap" }}>
                   <PriorityBadge p={task.priority} />
                   {task.assignee && <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{task.assignee.name}</span>}
+                  {task.employeeAssignee && <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{task.employeeAssignee.name}</span>}
                   {task.dueDate && <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Límite: {new Date(task.dueDate).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}</span>}
                 </div>
               </div>

@@ -9,6 +9,9 @@ export class TasksController {
 
   @Get()
   findAll(@Request() req) {
+    if (req.user.kind === "employee") {
+      return this.tasks.findMine(req.user.tenantId, req.user.employeeId);
+    }
     return this.tasks.findAll(req.user.tenantId);
   }
 

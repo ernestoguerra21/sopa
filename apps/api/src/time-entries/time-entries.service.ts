@@ -24,6 +24,13 @@ export class TimeEntriesService {
     });
   }
 
+  update(id: string, tenantId: string, data: { date?: string; hours?: number }) {
+    return this.db.timeEntry.updateMany({
+      where: { id, tenantId },
+      data: { ...(data.date ? { date: new Date(data.date) } : {}), ...(data.hours !== undefined ? { hours: data.hours } : {}) },
+    });
+  }
+
   remove(id: string, tenantId: string) {
     return this.db.timeEntry.deleteMany({ where: { id, tenantId } });
   }
