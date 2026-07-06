@@ -10,6 +10,7 @@ const NAV = [
   { href: "/dashboard", label: "Centro de operaciones", icon: IconHome },
   { href: "/tasks",     label: "Tareas",                icon: IconCheck },
   { href: "/rrhh",      label: "RRHH",                  icon: IconUsers },
+  { href: "/nomina",    label: "Nómina",                 icon: IconMoney },
   { href: "/inventario",label: "Inventario",             icon: IconBox },
   { href: "/compras",   label: "Compras",                icon: IconCart },
   { href: "/proveedores",label: "Proveedores",           icon: IconTruck },
@@ -191,6 +192,9 @@ function IconShield({ size = 16 }: { size?: number }) {
 }
 function IconBuilding({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>;
+}
+function IconMoney({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 }
 function IconLogout({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;

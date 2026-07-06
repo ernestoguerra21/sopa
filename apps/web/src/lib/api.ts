@@ -117,7 +117,33 @@ export const api = {
     update: (id: string, data: { name?: string }) => request(`/businesses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/businesses/${id}`, { method: "DELETE" }),
   },
+  payroll: {
+    list: (month?: number, year?: number) => {
+      const params = new URLSearchParams({ ...(month ? { month: String(month) } : {}), ...(year ? { year: String(year) } : {}) });
+      return request<PayrollRecord[]>(`/payroll?${params}`);
+    },
+    generate: (employeeId: string, month: number, year: number) =>
+      request<PayrollRecord>(`/payroll/generate/${employeeId}?month=${month}&year=${year}`, { method: "POST" }),
+    remove: (id: string) => request(`/payroll/${id}`, { method: "DELETE" }),
+  },
 };
+
+export interface PayrollRecord {
+  id: string;
+  employeeId: string;
+  month: number;
+  year: number;
+  grossSalary: string;
+  socialSecurityDeduction: string;
+  incomeTaxDeduction: string;
+  totalDeductions: string;
+  netSalary: string;
+  calculationDetails?: {
+    socialSecurityBreakdown: { bracket: string; amount: number }[];
+    incomeTaxBreakdown: { bracket: string; amount: number }[];
+  };
+  employee?: { id: string; name: string; position: string };
+}
 
 export interface Business {
   id: string;

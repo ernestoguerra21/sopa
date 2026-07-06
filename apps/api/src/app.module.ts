@@ -6,6 +6,7 @@ import { DepartmentsModule } from "./departments/departments.module";
 import { EmployeesModule } from "./employees/employees.module";
 import { InventoryModule } from "./inventory/inventory.module";
 import { MembersModule } from "./members/members.module";
+import { PayrollModule } from "./payroll/payroll.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { PurchaseOrdersModule } from "./purchase-orders/purchase-orders.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
@@ -24,6 +25,7 @@ import { TimeEntriesModule } from "./time-entries/time-entries.module";
     PurchaseOrdersModule,
     DepartmentsModule,
     TimeEntriesModule,
+    PayrollModule,
     MembersModule,
     BusinessesModule,
   ],
