@@ -5,22 +5,22 @@ import { PrismaService } from "../prisma/prisma.service";
 export class SuppliersService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string) {
+  findAll(businessId: string) {
     return this.db.supplier.findMany({
-      where: { tenantId },
+      where: { businessId },
       orderBy: { name: "asc" },
     });
   }
 
-  create(tenantId: string, data: { name: string; contact?: string; phone?: string }) {
-    return this.db.supplier.create({ data: { tenantId, ...data } });
+  create(tenantId: string, businessId: string, data: { name: string; contact?: string; phone?: string }) {
+    return this.db.supplier.create({ data: { tenantId, businessId, ...data } });
   }
 
-  update(id: string, tenantId: string, data: { name?: string; contact?: string; phone?: string }) {
-    return this.db.supplier.updateMany({ where: { id, tenantId }, data });
+  update(id: string, businessId: string, data: { name?: string; contact?: string; phone?: string }) {
+    return this.db.supplier.updateMany({ where: { id, businessId }, data });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.supplier.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.supplier.deleteMany({ where: { id, businessId } });
   }
 }

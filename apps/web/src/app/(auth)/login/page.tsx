@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { saveToken, saveUser } from "@/lib/auth";
+import { saveToken, saveUser, getActiveBusinessId, setActiveBusinessId } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +20,17 @@ export default function LoginPage() {
       const { accessToken, user } = await api.auth.login(email, password);
       saveToken(accessToken);
       saveUser(user);
-      router.push(user.kind === "employee" ? "/fichar" : "/dashboard");
+
+      if (user.kind === "employee") {
+        router.push("/fichar");
+        return;
+      }
+
+      const businesses = await api.businesses.list();
+      const stored = getActiveBusinessId();
+      const active = businesses.find(b => b.id === stored) ?? businesses[0];
+      if (active) setActiveBusinessId(active.id);
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Credenciales incorrectas");
     } finally {

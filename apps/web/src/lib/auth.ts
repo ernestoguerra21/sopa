@@ -25,4 +25,14 @@ export function getStoredUser(): User | null {
 export function clearSession() {
   localStorage.removeItem("sopa_token");
   localStorage.removeItem("sopa_user");
+  localStorage.removeItem("sopa_business_id");
+}
+
+export function getActiveBusinessId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("sopa_business_id");
+}
+
+export function setActiveBusinessId(id: string) {
+  localStorage.setItem("sopa_business_id", id);
 }

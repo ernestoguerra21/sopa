@@ -5,10 +5,10 @@ import { PrismaService } from "../prisma/prisma.service";
 export class TimeEntriesService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string, employeeId: string, from?: string, to?: string) {
+  findAll(businessId: string, employeeId: string, from?: string, to?: string) {
     return this.db.timeEntry.findMany({
       where: {
-        tenantId,
+        businessId,
         employeeId,
         ...(from || to
           ? { date: { ...(from ? { gte: new Date(from) } : {}), ...(to ? { lte: new Date(to) } : {}) } }
@@ -18,20 +18,20 @@ export class TimeEntriesService {
     });
   }
 
-  create(tenantId: string, data: { employeeId: string; date: string; hours?: number }) {
+  create(tenantId: string, businessId: string, data: { employeeId: string; date: string; hours?: number }) {
     return this.db.timeEntry.create({
-      data: { tenantId, employeeId: data.employeeId, date: new Date(data.date), hours: data.hours },
+      data: { tenantId, businessId, employeeId: data.employeeId, date: new Date(data.date), hours: data.hours },
     });
   }
 
-  update(id: string, tenantId: string, data: { date?: string; hours?: number }) {
+  update(id: string, businessId: string, data: { date?: string; hours?: number }) {
     return this.db.timeEntry.updateMany({
-      where: { id, tenantId },
+      where: { id, businessId },
       data: { ...(data.date ? { date: new Date(data.date) } : {}), ...(data.hours !== undefined ? { hours: data.hours } : {}) },
     });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.timeEntry.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.timeEntry.deleteMany({ where: { id, businessId } });
   }
 }

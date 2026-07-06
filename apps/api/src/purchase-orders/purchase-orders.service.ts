@@ -11,18 +11,19 @@ interface CreateOrderDto {
 export class PurchaseOrdersService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string) {
+  findAll(businessId: string) {
     return this.db.purchaseOrder.findMany({
-      where: { tenantId },
+      where: { businessId },
       include: { supplier: true, items: true },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     });
   }
 
-  create(tenantId: string, data: CreateOrderDto) {
+  create(tenantId: string, businessId: string, data: CreateOrderDto) {
     return this.db.purchaseOrder.create({
       data: {
         tenantId,
+        businessId,
         supplierId: data.supplierId,
         notes: data.notes,
         items: { create: data.items },
@@ -31,9 +32,9 @@ export class PurchaseOrdersService {
     });
   }
 
-  async markReceived(id: string, tenantId: string) {
+  async markReceived(id: string, businessId: string) {
     const order = await this.db.purchaseOrder.findFirst({
-      where: { id, tenantId },
+      where: { id, businessId },
       include: { items: true },
     });
     if (!order || order.status !== "PENDING") return { count: 0 };
@@ -51,14 +52,14 @@ export class PurchaseOrdersService {
     ]);
   }
 
-  cancel(id: string, tenantId: string) {
+  cancel(id: string, businessId: string) {
     return this.db.purchaseOrder.updateMany({
-      where: { id, tenantId, status: "PENDING" },
+      where: { id, businessId, status: "PENDING" },
       data: { status: "CANCELLED" },
     });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.purchaseOrder.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.purchaseOrder.deleteMany({ where: { id, businessId } });
   }
 }

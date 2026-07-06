@@ -10,51 +10,56 @@ function hash(password: string) {
 export class MembersService {
   constructor(private readonly db: PrismaService) {}
 
-  private async orgAndBusiness(tenantId: string) {
-    const organization = await this.db.organization.findUnique({
-      where: { tenantId },
-      include: { businesses: true },
-    });
+  private async orgFor(tenantId: string) {
+    const organization = await this.db.organization.findUnique({ where: { tenantId } });
     if (!organization) throw new NotFoundException("Organización no encontrada para este tenant");
-    return { organization, business: organization.businesses[0] ?? null };
+    return organization;
   }
 
   async list(tenantId: string) {
-    const { organization, business } = await this.orgAndBusiness(tenantId);
+    const organization = await this.orgFor(tenantId);
+    const businesses = await this.db.business.findMany({ where: { organizationId: organization.id } });
+    const businessIds = businesses.map(b => b.id);
+    const businessNameById = new Map(businesses.map(b => [b.id, b.name]));
 
     const [orgMembers, businessMembers] = await Promise.all([
       this.db.organizationMember.findMany({
         where: { organizationId: organization.id },
         include: { user: { select: { id: true, name: true, email: true } } },
       }),
-      business
+      businessIds.length
         ? this.db.businessMember.findMany({
-            where: { businessId: business.id },
+            where: { businessId: { in: businessIds } },
             include: { user: { select: { id: true, name: true, email: true } } },
           })
         : Promise.resolve([]),
     ]);
 
-    const businessRoleByUserId = new Map(businessMembers.map(m => [m.userId, m.role]));
+    const businessRolesByUserId = new Map<string, { businessId: string; businessName: string; role: string }[]>();
+    for (const bm of businessMembers) {
+      const list = businessRolesByUserId.get(bm.userId) ?? [];
+      list.push({ businessId: bm.businessId, businessName: businessNameById.get(bm.businessId) ?? "", role: bm.role });
+      businessRolesByUserId.set(bm.userId, list);
+    }
 
     return {
       organization: { id: organization.id, name: organization.name },
-      business: business ? { id: business.id, name: business.name } : null,
+      businesses: businesses.map(b => ({ id: b.id, name: b.name })),
       members: orgMembers.map(m => ({
         userId: m.user.id,
         name: m.user.name,
         email: m.user.email,
         organizationRole: m.role,
-        businessRole: businessRoleByUserId.get(m.user.id) ?? null,
+        businessRoles: businessRolesByUserId.get(m.user.id) ?? [],
       })),
     };
   }
 
   async invite(
     tenantId: string,
-    data: { name: string; email: string; password: string; organizationRole: string; businessRole?: string },
+    data: { name: string; email: string; password: string; organizationRole: string; businessId?: string; businessRole?: string },
   ) {
-    const { organization, business } = await this.orgAndBusiness(tenantId);
+    const organization = await this.orgFor(tenantId);
 
     const existing = await this.db.user.findUnique({ where: { email: data.email } });
     if (existing) throw new ConflictException("Ya existe un usuario con ese email");
@@ -73,9 +78,9 @@ export class MembersService {
       data: { userId: user.id, organizationId: organization.id, role: data.organizationRole as any },
     });
 
-    if (data.businessRole && business) {
+    if (data.businessRole && data.businessId) {
       await this.db.businessMember.create({
-        data: { userId: user.id, businessId: business.id, role: data.businessRole as any },
+        data: { userId: user.id, businessId: data.businessId, role: data.businessRole as any },
       });
     }
 
@@ -85,9 +90,9 @@ export class MembersService {
   async updateRoles(
     tenantId: string,
     userId: string,
-    data: { organizationRole?: string; businessRole?: string | null },
+    data: { organizationRole?: string; businessId?: string; businessRole?: string | null },
   ) {
-    const { organization, business } = await this.orgAndBusiness(tenantId);
+    const organization = await this.orgFor(tenantId);
 
     if (data.organizationRole) {
       await this.db.organizationMember.update({
@@ -96,14 +101,14 @@ export class MembersService {
       });
     }
 
-    if (business && data.businessRole !== undefined) {
+    if (data.businessId && data.businessRole !== undefined) {
       if (data.businessRole === null) {
-        await this.db.businessMember.deleteMany({ where: { userId, businessId: business.id } });
+        await this.db.businessMember.deleteMany({ where: { userId, businessId: data.businessId } });
       } else {
         await this.db.businessMember.upsert({
-          where: { userId_businessId: { userId, businessId: business.id } },
+          where: { userId_businessId: { userId, businessId: data.businessId } },
           update: { role: data.businessRole as any },
-          create: { userId, businessId: business.id, role: data.businessRole as any },
+          create: { userId, businessId: data.businessId, role: data.businessRole as any },
         });
       }
     }
@@ -112,7 +117,7 @@ export class MembersService {
   }
 
   async remove(tenantId: string, userId: string) {
-    const { organization } = await this.orgAndBusiness(tenantId);
+    const organization = await this.orgFor(tenantId);
 
     const member = await this.db.organizationMember.findUnique({
       where: { userId_organizationId: { userId, organizationId: organization.id } },

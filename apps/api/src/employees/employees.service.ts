@@ -38,9 +38,9 @@ const EMPLOYEE_OMIT = { password: true } as const;
 export class EmployeesService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string) {
+  findAll(businessId: string) {
     return this.db.employee.findMany({
-      where: { tenantId },
+      where: { businessId },
       omit: EMPLOYEE_OMIT,
       include: {
         department: { select: { id: true, name: true } },
@@ -50,18 +50,18 @@ export class EmployeesService {
     });
   }
 
-  create(tenantId: string, data: { name: string; position: string } & EmployeeInput) {
+  create(tenantId: string, businessId: string, data: { name: string; position: string } & EmployeeInput) {
     return this.db.employee.create({
-      data: { tenantId, ...toPrismaData(data) } as any,
+      data: { tenantId, businessId, ...toPrismaData(data) } as any,
       omit: EMPLOYEE_OMIT,
     });
   }
 
-  update(id: string, tenantId: string, data: EmployeeInput) {
-    return this.db.employee.updateMany({ where: { id, tenantId }, data: toPrismaData(data) as any });
+  update(id: string, businessId: string, data: EmployeeInput) {
+    return this.db.employee.updateMany({ where: { id, businessId }, data: toPrismaData(data) as any });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.employee.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.employee.deleteMany({ where: { id, businessId } });
   }
 }

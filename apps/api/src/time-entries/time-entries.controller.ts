@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { BusinessContextGuard } from "../auth/business-context.guard";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/permissions.guard";
 import { RequirePermissions } from "../auth/require-permissions.decorator";
 import { TimeEntriesService } from "./time-entries.service";
 
 @Controller("time-entries")
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, BusinessContextGuard, PermissionsGuard)
 export class TimeEntriesController {
   constructor(private readonly timeEntries: TimeEntriesService) {}
 
@@ -17,7 +18,7 @@ export class TimeEntriesController {
     @Query("to") to?: string,
   ) {
     const targetEmployeeId = req.user.kind === "employee" ? req.user.employeeId : employeeId;
-    return this.timeEntries.findAll(req.user.tenantId, targetEmployeeId, from, to);
+    return this.timeEntries.findAll(req.businessId, targetEmployeeId, from, to);
   }
 
   @Post()
@@ -25,7 +26,7 @@ export class TimeEntriesController {
     if (req.user.kind !== "employee") {
       throw new ForbiddenException("Solo el trabajador puede fichar su propio horario");
     }
-    return this.timeEntries.create(req.user.tenantId, { ...body, employeeId: req.user.employeeId });
+    return this.timeEntries.create(req.user.tenantId, req.businessId, { ...body, employeeId: req.user.employeeId });
   }
 
   @Patch(":id")
@@ -34,7 +35,7 @@ export class TimeEntriesController {
     if (req.user.kind === "employee") {
       throw new ForbiddenException("Solo un administrador puede corregir fichajes");
     }
-    return this.timeEntries.update(id, req.user.tenantId, body);
+    return this.timeEntries.update(id, req.businessId, body);
   }
 
   @Delete(":id")
@@ -43,6 +44,6 @@ export class TimeEntriesController {
     if (req.user.kind === "employee") {
       throw new ForbiddenException("Solo un administrador puede eliminar fichajes");
     }
-    return this.timeEntries.remove(id, req.user.tenantId);
+    return this.timeEntries.remove(id, req.businessId);
   }
 }

@@ -41,13 +41,16 @@ model InventoryItem {
   quantity    Float    @default(0)
   minQuantity Float    @default(0)
   tenantId    String
+  businessId  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant      Tenant @relation(fields: [tenantId], references: [id])
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  business    Business  @relation(fields: [businessId], references: [id])
   orderItems  PurchaseOrderItem[]
 
   @@index([tenantId])
+  @@index([businessId])
 }
 
 model User {
@@ -92,6 +95,16 @@ model Business {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   members      BusinessMember[]
+
+  employees    Employee[]
+  departments  Department[]
+  tasks        Task[]
+  salesEntry   SalesEntry[]
+  alerts       Alert[]
+  inventory    InventoryItem[]
+  suppliers    Supplier[]
+  orders       PurchaseOrder[]
+  timeEntries  TimeEntry[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -156,6 +169,7 @@ model Employee {
   position   String
   status     EmployeeStatus  @default(ACTIVE)
   tenantId   String
+  businessId String
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
@@ -184,6 +198,7 @@ model Employee {
   scheduleDetail Json?
 
   tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  business    Business    @relation(fields: [businessId], references: [id])
   department  Department? @relation(fields: [departmentId], references: [id])
   manager     Employee?   @relation("EmployeeManager", fields: [managerId], references: [id])
   reports     Employee[]  @relation("EmployeeManager")
@@ -191,6 +206,7 @@ model Employee {
   assignedTasks Task[]    @relation("EmployeeAssignedTasks")
 
   @@index([tenantId])
+  @@index([businessId])
   @@index([departmentId])
   @@index([managerId])
 }
@@ -218,17 +234,20 @@ enum ScheduleType {
 }
 
 model Department {
-  id       String  @id @default(cuid())
-  name     String
-  tenantId String
-  parentId String?
+  id         String  @id @default(cuid())
+  name       String
+  tenantId   String
+  businessId String
+  parentId   String?
 
   tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  business  Business     @relation(fields: [businessId], references: [id])
   parent    Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
   children  Department[] @relation("DeptHierarchy")
   employees Employee[]
 
   @@index([tenantId])
+  @@index([businessId])
   @@index([parentId])
 }
 
@@ -236,15 +255,18 @@ model TimeEntry {
   id         String   @id @default(cuid())
   employeeId String
   tenantId   String
+  businessId String
   date       DateTime
   hours      Float?
   createdAt  DateTime @default(now())
 
-  employee Employee @relation(fields: [employeeId], references: [id])
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee  @relation(fields: [employeeId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  business Business  @relation(fields: [businessId], references: [id])
 
   @@index([employeeId])
   @@index([tenantId, date])
+  @@index([businessId, date])
 }
 
 model Task {
@@ -255,16 +277,19 @@ model Task {
   status      TaskStatus @default(PENDING)
   dueDate     DateTime?
   tenantId    String
+  businessId  String
   assigneeId  String?
   employeeAssigneeId String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  business    Business  @relation(fields: [businessId], references: [id])
   assignee    User?     @relation("AssignedTasks", fields: [assigneeId], references: [id])
   employeeAssignee Employee? @relation("EmployeeAssignedTasks", fields: [employeeAssigneeId], references: [id])
 
   @@index([tenantId])
+  @@index([businessId])
   @@index([status])
 }
 
@@ -287,11 +312,14 @@ model SalesEntry {
   expenses    Float    @default(0)
   notes       String?
   tenantId    String
+  businessId  String
   createdAt   DateTime @default(now())
 
-  tenant      Tenant @relation(fields: [tenantId], references: [id])
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  business    Business  @relation(fields: [businessId], references: [id])
 
   @@index([tenantId])
+  @@index([businessId, date])
   @@index([date])
 }
 
@@ -301,11 +329,14 @@ model Alert {
   message    String
   dismissed  Boolean   @default(false)
   tenantId   String
+  businessId String
   createdAt  DateTime  @default(now())
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id])
+  tenant     Tenant    @relation(fields: [tenantId], references: [id])
+  business   Business  @relation(fields: [businessId], references: [id])
 
   @@index([tenantId])
+  @@index([businessId])
   @@index([dismissed])
 }
 
@@ -317,18 +348,21 @@ enum AlertType {
 }
 
 model Supplier {
-  id        String   @id @default(cuid())
-  name      String
-  contact   String?
-  phone     String?
-  tenantId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  name       String
+  contact    String?
+  phone      String?
+  tenantId   String
+  businessId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  business  Business  @relation(fields: [businessId], references: [id])
   orders    PurchaseOrder[]
 
   @@index([tenantId])
+  @@index([businessId])
 }
 
 model PurchaseOrder {
@@ -336,15 +370,18 @@ model PurchaseOrder {
   status     PurchaseOrderStatus @default(PENDING)
   notes      String?
   tenantId   String
+  businessId String
   supplierId String
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  tenant     Tenant    @relation(fields: [tenantId], references: [id])
+  business   Business  @relation(fields: [businessId], references: [id])
   supplier   Supplier @relation(fields: [supplierId], references: [id])
   items      PurchaseOrderItem[]
 
   @@index([tenantId])
+  @@index([businessId])
   @@index([status])
 }
 

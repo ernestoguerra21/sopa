@@ -5,17 +5,18 @@ import { PrismaService } from "../prisma/prisma.service";
 export class InventoryService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string) {
+  findAll(businessId: string) {
     return this.db.inventoryItem.findMany({
-      where: { tenantId },
+      where: { businessId },
       orderBy: { name: "asc" },
     });
   }
 
-  create(tenantId: string, data: { name: string; unit: string; quantity?: number; minQuantity?: number }) {
+  create(tenantId: string, businessId: string, data: { name: string; unit: string; quantity?: number; minQuantity?: number }) {
     return this.db.inventoryItem.create({
       data: {
         tenantId,
+        businessId,
         name: data.name,
         unit: data.unit,
         quantity: data.quantity ?? 0,
@@ -24,11 +25,11 @@ export class InventoryService {
     });
   }
 
-  update(id: string, tenantId: string, data: { name?: string; unit?: string; quantity?: number; minQuantity?: number }) {
-    return this.db.inventoryItem.updateMany({ where: { id, tenantId }, data });
+  update(id: string, businessId: string, data: { name?: string; unit?: string; quantity?: number; minQuantity?: number }) {
+    return this.db.inventoryItem.updateMany({ where: { id, businessId }, data });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.inventoryItem.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.inventoryItem.deleteMany({ where: { id, businessId } });
   }
 }

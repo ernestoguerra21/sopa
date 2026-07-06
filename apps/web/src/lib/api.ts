@@ -5,13 +5,20 @@ function getToken() {
   return localStorage.getItem("sopa_token");
 }
 
+function getBusinessId() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("sopa_business_id");
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
+  const businessId = getBusinessId();
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(businessId ? { "X-Business-Id": businessId } : {}),
       ...init.headers,
     },
   });
@@ -98,13 +105,26 @@ export const api = {
   },
   members: {
     list: () => request<MembersResponse>("/members"),
-    invite: (data: { name: string; email: string; password: string; organizationRole: string; businessRole?: string }) =>
+    invite: (data: { name: string; email: string; password: string; organizationRole: string; businessId?: string; businessRole?: string }) =>
       request("/members", { method: "POST", body: JSON.stringify(data) }),
-    updateRoles: (userId: string, data: { organizationRole?: string; businessRole?: string | null }) =>
+    updateRoles: (userId: string, data: { organizationRole?: string; businessId?: string; businessRole?: string | null }) =>
       request(`/members/${userId}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (userId: string) => request(`/members/${userId}`, { method: "DELETE" }),
   },
+  businesses: {
+    list: () => request<Business[]>("/businesses"),
+    create: (data: { name: string }) => request<Business>("/businesses", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { name?: string }) => request(`/businesses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    remove: (id: string) => request(`/businesses/${id}`, { method: "DELETE" }),
+  },
 };
+
+export interface Business {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+}
 
 export interface EmployeeInput {
   name: string;
@@ -173,17 +193,23 @@ export interface User {
 export type OrganizationRole = "OWNER" | "ADMIN_ORG" | "FINANCE_MANAGER" | "HR_MANAGER" | "READ_ONLY";
 export type BusinessRole = "MANAGER" | "OPERATIONS_MANAGER" | "INVENTORY_MANAGER" | "SUPERVISOR" | "STAFF" | "READ_ONLY";
 
+export interface MemberBusinessRole {
+  businessId: string;
+  businessName: string;
+  role: BusinessRole;
+}
+
 export interface Member {
   userId: string;
   name: string;
   email: string;
   organizationRole: OrganizationRole;
-  businessRole: BusinessRole | null;
+  businessRoles: MemberBusinessRole[];
 }
 
 export interface MembersResponse {
   organization: { id: string; name: string };
-  business: { id: string; name: string } | null;
+  businesses: { id: string; name: string }[];
   members: Member[];
 }
 

@@ -19,26 +19,27 @@ const TASK_INCLUDE = {
 export class TasksService {
   constructor(private readonly db: PrismaService) {}
 
-  findAll(tenantId: string) {
+  findAll(businessId: string) {
     return this.db.task.findMany({
-      where: { tenantId },
+      where: { businessId },
       include: TASK_INCLUDE,
       orderBy: [{ status: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
     });
   }
 
-  findMine(tenantId: string, employeeId: string) {
+  findMine(businessId: string, employeeId: string) {
     return this.db.task.findMany({
-      where: { tenantId, employeeAssigneeId: employeeId },
+      where: { businessId, employeeAssigneeId: employeeId },
       include: TASK_INCLUDE,
       orderBy: [{ status: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
     });
   }
 
-  create(tenantId: string, data: CreateTaskDto) {
+  create(tenantId: string, businessId: string, data: CreateTaskDto) {
     return this.db.task.create({
       data: {
         tenantId,
+        businessId,
         title: data.title,
         description: data.description,
         priority: data.priority ?? "MEDIUM",
@@ -51,14 +52,14 @@ export class TasksService {
     });
   }
 
-  updateStatus(id: string, tenantId: string, status: "PENDING" | "IN_PROGRESS" | "DONE") {
+  updateStatus(id: string, businessId: string, status: "PENDING" | "IN_PROGRESS" | "DONE") {
     return this.db.task.updateMany({
-      where: { id, tenantId },
+      where: { id, businessId },
       data: { status },
     });
   }
 
-  remove(id: string, tenantId: string) {
-    return this.db.task.deleteMany({ where: { id, tenantId } });
+  remove(id: string, businessId: string) {
+    return this.db.task.deleteMany({ where: { id, businessId } });
   }
 }

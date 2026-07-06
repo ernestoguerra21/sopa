@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { getStoredUser, clearSession } from "@/lib/auth";
-import { User } from "@/lib/api";
+import { getStoredUser, clearSession, getActiveBusinessId, setActiveBusinessId } from "@/lib/auth";
+import { api, Business, User } from "@/lib/api";
 
 const NAV = [
   { href: "/dashboard", label: "Centro de operaciones", icon: IconHome },
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/compras",   label: "Compras",                icon: IconCart },
   { href: "/proveedores",label: "Proveedores",           icon: IconTruck },
   { href: "/usuarios",  label: "Usuarios",               icon: IconShield },
+  { href: "/negocios",  label: "Negocios",               icon: IconBuilding },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [activeBusinessId, setActiveBusinessIdState] = useState("");
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -28,6 +31,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     else if (stored.kind === "employee") router.push("/fichar");
     else setUser(stored);
   }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+    api.businesses.list().then(list => {
+      setBusinesses(list);
+      const stored = getActiveBusinessId();
+      const match = list.find(b => b.id === stored) ?? list[0];
+      if (match) {
+        setActiveBusinessIdState(match.id);
+        if (stored !== match.id) setActiveBusinessId(match.id);
+      }
+    }).catch(() => {});
+  }, [user]);
+
+  function switchBusiness(id: string) {
+    setActiveBusinessId(id);
+    window.location.reload();
+  }
 
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
@@ -69,9 +90,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           {user && (
             <div style={{ background: "var(--surface)", borderRadius: "10px", padding: "10px 12px", border: "1px solid var(--border)" }}>
-              <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {user.tenant.name}
-              </div>
+              {businesses.length > 1 ? (
+                <select
+                  value={activeBusinessId}
+                  onChange={e => switchBusiness(e.target.value)}
+                  style={{
+                    fontSize: "12px", fontWeight: 500, color: "var(--text-primary)", background: "transparent",
+                    border: "none", padding: 0, width: "100%", cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  {businesses.map(b => <option key={b.id} value={b.id} style={{ background: "var(--bg-elevated)" }}>{b.name}</option>)}
+                </select>
+              ) : (
+                <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {businesses[0]?.name ?? user.tenant.name}
+                </div>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
                 <span className="dot-green" />
                 <span style={{ fontSize: "11px", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -154,6 +188,9 @@ function IconTruck({ size = 16 }: { size?: number }) {
 }
 function IconShield({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+}
+function IconBuilding({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>;
 }
 function IconLogout({ size = 16 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
