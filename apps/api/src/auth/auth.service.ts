@@ -17,9 +17,21 @@ export class AuthService {
   async login(email: string, password: string) {
     const hashed = hash(password);
 
-    const user = await this.db.user.findUnique({ where: { email }, include: { tenant: true } });
+    const user = await this.db.user.findUnique({
+      where: { email },
+      include: { tenant: true, organizationMemberships: true, businessMemberships: true },
+    });
     if (user && user.password === hashed) {
-      const payload = { sub: user.id, email: user.email, role: user.role, tenantId: user.tenantId, kind: "user" };
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        tenantId: user.tenantId,
+        kind: "user",
+        organizationRoles: user.organizationMemberships.map(m => m.role),
+        businessRoles: user.businessMemberships.map(m => m.role),
+        businessIds: user.businessMemberships.map(m => m.businessId),
+      };
       return {
         accessToken: this.jwt.sign(payload),
         user: {

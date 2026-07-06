@@ -62,7 +62,83 @@ model User {
   tenant    Tenant @relation(fields: [tenantId], references: [id])
   tasks     Task[] @relation("AssignedTasks")
 
+  organizationMemberships OrganizationMember[]
+  businessMemberships     BusinessMember[]
+
   @@index([tenantId])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  businesses Business[]
+  members    OrganizationMember[]
+}
+
+model Business {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  members      BusinessMember[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  userId         String
+  organizationId String
+  role           OrganizationRole
+  createdAt      DateTime         @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model BusinessMember {
+  id         String       @id @default(cuid())
+  userId     String
+  businessId String
+  role       BusinessRole
+  createdAt  DateTime     @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@unique([userId, businessId])
+  @@index([businessId])
+  @@index([userId])
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN_ORG
+  FINANCE_MANAGER
+  HR_MANAGER
+  READ_ONLY
+}
+
+enum BusinessRole {
+  MANAGER
+  OPERATIONS_MANAGER
+  INVENTORY_MANAGER
+  SUPERVISOR
+  STAFF
+  READ_ONLY
 }
 
 enum Role {

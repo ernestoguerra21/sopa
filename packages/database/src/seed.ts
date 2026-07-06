@@ -38,6 +38,37 @@ async function main() {
     },
   });
 
+  const organization = await db.organization.upsert({
+    where: { slug: "demo-restaurante" },
+    update: {},
+    create: { name: "Restaurante Demo", slug: "demo-restaurante" },
+  });
+
+  const business = await db.business.upsert({
+    where: { organizationId_slug: { organizationId: organization.id, slug: "principal" } },
+    update: {},
+    create: { name: "Restaurante Demo", slug: "principal", organizationId: organization.id },
+  });
+
+  const dueno = await db.user.findUnique({ where: { email: "dueno@demo.com" } });
+  const gerenteUser = await db.user.findUnique({ where: { email: "gerente@demo.com" } });
+
+  await db.organizationMember.upsert({
+    where: { userId_organizationId: { userId: dueno!.id, organizationId: organization.id } },
+    update: {},
+    create: { userId: dueno!.id, organizationId: organization.id, role: "OWNER" },
+  });
+  await db.organizationMember.upsert({
+    where: { userId_organizationId: { userId: gerenteUser!.id, organizationId: organization.id } },
+    update: {},
+    create: { userId: gerenteUser!.id, organizationId: organization.id, role: "ADMIN_ORG" },
+  });
+  await db.businessMember.upsert({
+    where: { userId_businessId: { userId: gerenteUser!.id, businessId: business.id } },
+    update: {},
+    create: { userId: gerenteUser!.id, businessId: business.id, role: "MANAGER" },
+  });
+
   const existingEmployees = await db.employee.count({ where: { tenantId: tenant.id } });
   if (existingEmployees === 0) await db.employee.createMany({
     data: [

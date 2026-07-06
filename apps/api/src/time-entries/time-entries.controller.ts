@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { PermissionsGuard } from "../auth/permissions.guard";
+import { RequirePermissions } from "../auth/require-permissions.decorator";
 import { TimeEntriesService } from "./time-entries.service";
 
 @Controller("time-entries")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class TimeEntriesController {
   constructor(private readonly timeEntries: TimeEntriesService) {}
 
@@ -27,6 +29,7 @@ export class TimeEntriesController {
   }
 
   @Patch(":id")
+  @RequirePermissions("hr.manage")
   update(@Param("id") id: string, @Request() req, @Body() body: any) {
     if (req.user.kind === "employee") {
       throw new ForbiddenException("Solo un administrador puede corregir fichajes");
@@ -35,6 +38,7 @@ export class TimeEntriesController {
   }
 
   @Delete(":id")
+  @RequirePermissions("hr.manage")
   remove(@Param("id") id: string, @Request() req) {
     if (req.user.kind === "employee") {
       throw new ForbiddenException("Solo un administrador puede eliminar fichajes");
