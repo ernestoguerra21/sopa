@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { getStoredUser, clearSession, getActiveBusinessId, setActiveBusinessId } from "@/lib/auth";
 import { api, Business, User } from "@/lib/api";
+import { AlpakaLogo } from "@/components/AlpakaLogo";
 
 const NAV = [
   { href: "/dashboard", label: "Centro de operaciones", icon: IconHome },
@@ -56,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   function logout() { clearSession(); router.push("/login"); }
 
-  const currentLabel = NAV.find(n => n.href === pathname)?.label ?? "SOPA";
+  const currentLabel = NAV.find(n => n.href === pathname)?.label ?? "Alpaka";
 
   return (
     <div style={{ position: "relative", display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -79,16 +80,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}>
         {/* Logo */}
         <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <div style={{
-              width: "32px", height: "32px", flexShrink: 0,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              borderRadius: "9px",
-              boxShadow: "0 0 16px rgba(99,102,241,0.4)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "13px", color: "#fff",
-            }}>S</div>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 700, color: "var(--text-primary)" }}>SOPA</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "12px" }}>
+            <AlpakaLogo size={34} />
+            <span style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, letterSpacing: "0.12em", color: "#EDEEF2" }}>ALPAKA</span>
+              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "9px", fontWeight: 700, letterSpacing: "0.3em", color: "#fb923c" }}>ERP</span>
+            </span>
           </div>
           {user && (
             <div style={{ background: "var(--surface)", borderRadius: "10px", padding: "10px 12px", border: "1px solid var(--border)" }}>

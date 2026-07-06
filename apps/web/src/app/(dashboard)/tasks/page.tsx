@@ -94,7 +94,7 @@ export default function TasksPage() {
 
       {/* Create form */}
       {creating && (
-        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(99,102,241,0.25)" }}>
+        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(249,115,22,0.25)" }}>
           <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <input
               type="text" autoFocus
@@ -171,7 +171,7 @@ export default function TasksPage() {
               <div style={{ display: "flex", alignItems: "center", gap: "4px", opacity: 0 }} className="task-actions">
                 {task.status === "PENDING" && (
                   <button onClick={() => changeStatus(task, "IN_PROGRESS")}
-                    style={{ fontSize: "11px", color: "var(--accent-soft)", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "6px", padding: "3px 8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                    style={{ fontSize: "11px", color: "var(--accent-soft)", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", borderRadius: "6px", padding: "3px 8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
                     Iniciar
                   </button>
                 )}

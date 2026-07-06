@@ -212,7 +212,7 @@ export default function NominaPage() {
 
       {/* Formulario de ajuste manual */}
       {editing && (
-        <div className="glass animate-scale-in" style={{ padding: "20px", marginBottom: "20px", borderColor: "rgba(99,102,241,0.3)" }}>
+        <div className="glass animate-scale-in" style={{ padding: "20px", marginBottom: "20px", borderColor: "rgba(249,115,22,0.3)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div>
               <div style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-primary)" }}>{editing.employee?.name}</div>
@@ -240,7 +240,7 @@ export default function NominaPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "24px", paddingTop: "14px", borderTop: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px 24px", flexWrap: "wrap", paddingTop: "14px", borderTop: "1px solid var(--border)" }}>
             <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
               Total retenido: <span style={{ color: "#fca5a5" }}>-{money(isFinite(previewTotal) ? previewTotal : 0)}</span>
             </div>
@@ -276,7 +276,7 @@ export default function NominaPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           {records.map((r, i) => (
             <div key={r.id} className={`glass animate-fade-up delay-${Math.min(i, 5)}`}
-              style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", cursor: "pointer", borderColor: editing?.id === r.id ? "rgba(99,102,241,0.4)" : undefined }}
+              style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", cursor: "pointer", borderColor: editing?.id === r.id ? "rgba(249,115,22,0.4)" : undefined }}
               onClick={() => openEditor(r)}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>{r.employee?.name ?? "—"}</div>

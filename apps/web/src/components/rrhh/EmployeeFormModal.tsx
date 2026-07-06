@@ -177,9 +177,9 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
                     return (
                       <button key={key} type="button" onClick={() => toggleDay(key)} style={{
                         width: "32px", height: "32px", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontFamily: "inherit",
-                        border: `1px solid ${active ? "rgba(99,102,241,0.5)" : "var(--border)"}`,
-                        background: active ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.03)",
-                        color: active ? "#a5b4fc" : "var(--text-muted)",
+                        border: `1px solid ${active ? "rgba(249,115,22,0.5)" : "var(--border)"}`,
+                        background: active ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.03)",
+                        color: active ? "#7c2d12" : "var(--text-muted)",
                       }}>{label}</button>
                     );
                   })}
@@ -225,7 +225,7 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
 }
 
 function Row({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "flex", gap: "10px" }}>{children}</div>;
+  return <div className="form-row">{children}</div>;
 }
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {

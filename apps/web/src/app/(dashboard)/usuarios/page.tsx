@@ -112,7 +112,7 @@ export default function UsuariosPage() {
       )}
 
       {inviting && data && (
-        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(99,102,241,0.25)" }}>
+        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(249,115,22,0.25)" }}>
           <form onSubmit={handleInvite} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", gap: "10px" }}>
               <input className="glass-input" style={{ flex: 1 }} placeholder="Nombre completo" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
@@ -154,10 +154,10 @@ export default function UsuariosPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                   <div style={{
                     width: "36px", height: "36px", flexShrink: 0, borderRadius: "10px",
-                    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                    background: "linear-gradient(135deg, #f97316, #ea580c)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "13px", color: "#fff",
-                    boxShadow: "0 0 12px rgba(99,102,241,0.3)",
+                    boxShadow: "0 0 12px rgba(249,115,22,0.3)",
                   }}>
                     {member.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
                   </div>

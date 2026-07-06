@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredUser, clearSession } from "@/lib/auth";
 import { User } from "@/lib/api";
+import { AlpakaLogo } from "@/components/AlpakaLogo";
 
 export default function WorkerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -41,14 +42,7 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "32px", height: "32px", flexShrink: 0,
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            borderRadius: "9px",
-            boxShadow: "0 0 16px rgba(99,102,241,0.4)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "13px", color: "#fff",
-          }}>S</div>
+          <AlpakaLogo size={32} />
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "var(--text-primary)" }}>{user.name}</div>
             <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user.tenant.name}</div>

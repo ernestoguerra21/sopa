@@ -93,7 +93,7 @@ export default function ComprasPage() {
 
       {/* Create form */}
       {creating && (
-        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(99,102,241,0.25)" }}>
+        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(249,115,22,0.25)" }}>
           <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className="glass-input">
               {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}

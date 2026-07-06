@@ -70,7 +70,7 @@ export default function FicharPage() {
       {needsHours ? (
         <Cronometro onStop={saveFromTimer} />
       ) : (
-        <form onSubmit={registerDay} className="glass" style={{ padding: "16px", marginBottom: "16px", display: "flex", gap: "10px", alignItems: "flex-end" }}>
+        <form onSubmit={registerDay} className="glass" style={{ padding: "16px", marginBottom: "16px", display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap" }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Fecha</label>
             <input type="date" className="glass-input" value={date} onChange={e => setDate(e.target.value)} />

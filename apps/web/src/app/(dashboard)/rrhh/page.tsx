@@ -85,10 +85,10 @@ export default function RrhhPage() {
                     onClick={() => setEditing(emp)}>
                     <div style={{
                       width: "36px", height: "36px", flexShrink: 0, borderRadius: "10px",
-                      background: emp.status === "ACTIVE" ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(255,255,255,0.06)",
+                      background: emp.status === "ACTIVE" ? "linear-gradient(135deg, #f97316, #ea580c)" : "rgba(255,255,255,0.06)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "13px", color: "#fff",
-                      boxShadow: emp.status === "ACTIVE" ? "0 0 12px rgba(99,102,241,0.3)" : "none",
+                      boxShadow: emp.status === "ACTIVE" ? "0 0 12px rgba(249,115,22,0.3)" : "none",
                     }}>
                       {emp.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
                     </div>

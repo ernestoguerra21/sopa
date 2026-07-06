@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { saveToken, saveUser, getActiveBusinessId, setActiveBusinessId } from "@/lib/auth";
+import { AlpakaLogo } from "@/components/AlpakaLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,20 +50,8 @@ export default function LoginPage() {
 
       <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "400px" }}>
         {/* Logo */}
-        <div className="animate-fade-up delay-0" style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            width: "56px", height: "56px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            borderRadius: "16px",
-            boxShadow: "0 0 32px rgba(99,102,241,0.4)",
-            marginBottom: "16px",
-            fontSize: "22px", fontWeight: 700,
-            fontFamily: "'Syne', sans-serif",
-            color: "#fff",
-          }}>S</div>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>SOPA</div>
-          <div style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>Sistema Operativo Para Administradores</div>
+        <div className="animate-fade-up delay-0" style={{ display: "flex", justifyContent: "center", marginBottom: "36px" }}>
+          <AlpakaLogo size={88} showText />
         </div>
 
         {/* Card */}

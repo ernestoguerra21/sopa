@@ -87,7 +87,7 @@ export default function NegociosPage() {
       )}
 
       {creating && (
-        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(99,102,241,0.25)" }}>
+        <div className="glass animate-scale-in" style={{ padding: "16px", marginBottom: "16px", borderColor: "rgba(249,115,22,0.25)" }}>
           <form onSubmit={handleCreate} style={{ display: "flex", gap: "10px" }}>
             <input className="glass-input" style={{ flex: 1 }} placeholder="Nombre del negocio" value={name} onChange={e => setName(e.target.value)} autoFocus />
             <button type="button" onClick={() => setCreating(false)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "0 16px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
@@ -108,10 +108,10 @@ export default function NegociosPage() {
             <div key={b.id} className={`glass animate-fade-up delay-${Math.min(i, 5)}`} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px" }}>
               <div style={{
                 width: "36px", height: "36px", flexShrink: 0, borderRadius: "10px",
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                background: "linear-gradient(135deg, #f97316, #ea580c)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: "13px", color: "#fff",
-                boxShadow: "0 0 12px rgba(99,102,241,0.3)",
+                boxShadow: "0 0 12px rgba(249,115,22,0.3)",
               }}>
                 {b.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()}
               </div>

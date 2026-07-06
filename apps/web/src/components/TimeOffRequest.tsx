@@ -54,7 +54,7 @@ export function TimeOffRequest({ employeeId }: { employeeId: string }) {
       <button
         onClick={() => setShowForm(!showForm)}
         style={{
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          background: "linear-gradient(135deg, #f97316, #ea580c)",
           color: "white",
           border: "none",
           borderRadius: "10px",
@@ -84,7 +84,7 @@ export function TimeOffRequest({ employeeId }: { employeeId: string }) {
             </select>
           </div>
 
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div className="form-row">
             <div style={{ flex: 1 }}>
               <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Desde</label>
               <input
