@@ -104,6 +104,54 @@ export class PayrollService {
     });
   }
 
+  // Ajuste manual: si cambia el bruto se recalculan retenciones; otras deducciones son libres
+  async update(
+    id: string,
+    tenantId: string,
+    data: { grossSalary?: number; otherDeductions?: number; socialSecurityDeduction?: number; incomeTaxDeduction?: number }
+  ) {
+    const record = await this.db.payrollRecord.findFirst({ where: { id, tenantId } });
+    if (!record) throw new NotFoundException("Nómina no encontrada");
+
+    let gross = data.grossSalary ?? Number(record.grossSalary);
+    let ss: number;
+    let tax: number;
+    let details: any = record.calculationDetails;
+
+    if (data.grossSalary !== undefined) {
+      // Bruto nuevo → recalcular retenciones legales
+      const calc = calculateCubaPayroll(data.grossSalary);
+      ss = data.socialSecurityDeduction ?? calc.socialSecurityDeduction;
+      tax = data.incomeTaxDeduction ?? calc.incomeTaxDeduction;
+      details = calc.details;
+    } else {
+      ss = data.socialSecurityDeduction ?? Number(record.socialSecurityDeduction);
+      tax = data.incomeTaxDeduction ?? Number(record.incomeTaxDeduction);
+    }
+
+    const other = data.otherDeductions ?? Number(record.otherDeductions);
+    if (gross < 0 || ss < 0 || tax < 0 || other < 0) {
+      throw new BadRequestException("Los importes no pueden ser negativos");
+    }
+
+    const totalDeductions = Math.round((ss + tax + other) * 100) / 100;
+    const netSalary = Math.round((gross - totalDeductions) * 100) / 100;
+
+    return this.db.payrollRecord.update({
+      where: { id },
+      data: {
+        grossSalary: gross,
+        socialSecurityDeduction: ss,
+        incomeTaxDeduction: tax,
+        otherDeductions: other,
+        totalDeductions,
+        netSalary,
+        calculationDetails: details,
+      },
+      include: { employee: { select: { id: true, name: true, position: true } } },
+    });
+  }
+
   async delete(id: string, tenantId: string) {
     const record = await this.db.payrollRecord.findFirst({
       where: { id, tenantId },

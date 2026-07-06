@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Query, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Post, Delete, Param, Query, Request, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/permissions.guard";
 import { BusinessContextGuard } from "../auth/business-context.guard";
@@ -46,6 +46,16 @@ export class PayrollController {
   @RequirePermissions("hr.view")
   async getForEmployee(@Param("employeeId") employeeId: string, @Request() req) {
     return this.payroll.getForEmployee(employeeId, req.user.tenantId);
+  }
+
+  @Patch(":id")
+  @RequirePermissions("hr.manage")
+  async update(
+    @Param("id") id: string,
+    @Request() req,
+    @Body() body: { grossSalary?: number; otherDeductions?: number; socialSecurityDeduction?: number; incomeTaxDeduction?: number }
+  ) {
+    return this.payroll.update(id, req.user.tenantId, body);
   }
 
   @Delete(":id")

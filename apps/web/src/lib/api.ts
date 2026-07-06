@@ -124,6 +124,8 @@ export const api = {
     },
     generate: (employeeId: string, month: number, year: number) =>
       request<PayrollRecord>(`/payroll/generate/${employeeId}?month=${month}&year=${year}`, { method: "POST" }),
+    update: (id: string, data: { grossSalary?: number; otherDeductions?: number; socialSecurityDeduction?: number; incomeTaxDeduction?: number }) =>
+      request<PayrollRecord>(`/payroll/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/payroll/${id}`, { method: "DELETE" }),
   },
 };
@@ -136,6 +138,7 @@ export interface PayrollRecord {
   grossSalary: string;
   socialSecurityDeduction: string;
   incomeTaxDeduction: string;
+  otherDeductions: string;
   totalDeductions: string;
   netSalary: string;
   calculationDetails?: {
