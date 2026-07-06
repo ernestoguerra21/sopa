@@ -129,6 +129,27 @@ export default function NominaPage() {
     setFTax(String(Math.round(tax * 100) / 100));
   }
 
+  // Desglose por tramos a partir del bruto actual (mismos tramos que cuba-calculator.ts)
+  function breakdownFor(g: number) {
+    const round = (n: number) => Math.round(n * 100) / 100;
+    const ss: { bracket: string; amount: number }[] = [];
+    ss.push({ bracket: "Hasta 15,000 @ 5%", amount: round(Math.min(g, 15000) * 0.05) });
+    if (g > 15000) ss.push({ bracket: "Exceso de 15,000 @ 10%", amount: round((g - 15000) * 0.1) });
+
+    const tax: { bracket: string; amount: number }[] = [];
+    if (g <= 3260) {
+      tax.push({ bracket: "Exento hasta 3,260", amount: 0 });
+    } else {
+      if (g > 3260) tax.push({ bracket: "3,260 - 9,510 @ 3%", amount: round((Math.min(g, 9510) - 3260) * 0.03) });
+      if (g > 9510) tax.push({ bracket: "9,510 - 15,000 @ 5%", amount: round((Math.min(g, 15000) - 9510) * 0.05) });
+      if (g > 15000) tax.push({ bracket: "15,000 - 20,000 @ 7.5%", amount: round((Math.min(g, 20000) - 15000) * 0.075) });
+      if (g > 20000) tax.push({ bracket: "20,000 - 25,000 @ 10%", amount: round((Math.min(g, 25000) - 20000) * 0.1) });
+      if (g > 25000) tax.push({ bracket: "25,000 - 30,000 @ 15%", amount: round((Math.min(g, 30000) - 25000) * 0.15) });
+      if (g > 30000) tax.push({ bracket: "30,000+ @ 20%", amount: round((g - 30000) * 0.2) });
+    }
+    return { socialSecurityBreakdown: ss, incomeTaxBreakdown: tax };
+  }
+
   async function remove(id: string) {
     setError("");
     try {
@@ -235,6 +256,7 @@ export default function NominaPage() {
               otherDeductions: fOther || "0",
               totalDeductions: String(Number(fSS) + Number(fTax) + Number(fOther)),
               netSalary: String(Number(fGross) - (Number(fSS) + Number(fTax) + Number(fOther))),
+              calculationDetails: breakdownFor(Number(fGross) || 0),
             })} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "8px 18px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
               Recibo PDF
             </button>
