@@ -49,7 +49,8 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.position.trim()) return;
-    if (!form.documentId?.trim()) { setError("El carnet de identidad es obligatorio"); return; }
+    if (!form.lastName?.trim()) { setError("Los apellidos son obligatorios"); return; }
+    if (!/^\d{11}$/.test(form.documentId?.trim() ?? "")) { setError("El carnet de identidad debe tener 11 dígitos numéricos"); return; }
     setSaving(true);
     setError("");
     try {
@@ -83,10 +84,18 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
           <FieldGroup label="Datos personales">
             <Row>
               <Field label="Nombre" required><input className="glass-input" value={form.name} onChange={e => set("name", e.target.value)} /></Field>
-              <Field label="Apellidos"><input className="glass-input" value={form.lastName} onChange={e => set("lastName", e.target.value)} /></Field>
+              <Field label="Apellidos" required><input className="glass-input" value={form.lastName} onChange={e => set("lastName", e.target.value)} /></Field>
             </Row>
             <Row>
-              <Field label="Carnet de identidad" required><input className="glass-input" value={form.documentId} onChange={e => set("documentId", e.target.value)} /></Field>
+              <Field label="Carnet de identidad" required>
+                <input
+                  className="glass-input"
+                  inputMode="numeric"
+                  maxLength={11}
+                  value={form.documentId}
+                  onChange={e => set("documentId", e.target.value.replace(/\D/g, "").slice(0, 11))}
+                />
+              </Field>
               <Field label="Teléfono"><input className="glass-input" value={form.phone} onChange={e => set("phone", e.target.value)} /></Field>
             </Row>
             <Row>
