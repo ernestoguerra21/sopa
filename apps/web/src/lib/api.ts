@@ -145,7 +145,7 @@ export interface PayrollRecord {
     socialSecurityBreakdown: { bracket: string; amount: number }[];
     incomeTaxBreakdown: { bracket: string; amount: number }[];
   };
-  employee?: { id: string; name: string; position: string };
+  employee?: { id: string; name: string; position: string; lastName?: string | null; documentId?: string | null };
 }
 
 export interface Business {

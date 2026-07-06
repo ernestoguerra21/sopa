@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, PayrollRecord, Employee } from "@/lib/api";
+import { getActiveBusinessId } from "@/lib/auth";
 
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const now = new Date();
@@ -19,6 +20,8 @@ export default function NominaPage() {
   const [year, setYear] = useState(now.getFullYear());
   const [employeeId, setEmployeeId] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [companyName, setCompanyName] = useState("");
+  const [printing, setPrinting] = useState<PayrollRecord | null>(null);
 
   // Formulario de edición
   const [editing, setEditing] = useState<PayrollRecord | null>(null);
@@ -41,6 +44,19 @@ export default function NominaPage() {
     }
   }
   useEffect(() => { load(); setEditing(null); }, [month, year]);
+
+  useEffect(() => {
+    const activeId = getActiveBusinessId();
+    api.businesses.list().then(bs => {
+      const b = bs.find(x => x.id === activeId) ?? bs[0];
+      if (b) setCompanyName(b.name);
+    }).catch(() => {});
+  }, []);
+
+  function printReceipt(r: PayrollRecord) {
+    setPrinting(r);
+    setTimeout(() => { window.print(); }, 50);
+  }
 
   function openEditor(r: PayrollRecord) {
     setEditing(r);
@@ -206,6 +222,9 @@ export default function NominaPage() {
               Neto a cobrar: {money(isFinite(previewNet) ? previewNet : 0)}
             </div>
             <div style={{ flex: 1 }} />
+            <button onClick={() => printReceipt(editing)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-secondary)", borderRadius: "10px", padding: "8px 18px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>
+              Recibo PDF
+            </button>
             <button onClick={save} disabled={saving} className="btn-glow" style={{ padding: "8px 24px", opacity: saving ? 0.6 : 1 }}>
               {saving ? "Guardando..." : "Guardar ajustes"}
             </button>
@@ -250,6 +269,140 @@ export default function NominaPage() {
           ))}
         </div>
       )}
+
+      {printing && (
+        <Receipt record={printing} company={companyName} onClose={() => setPrinting(null)} />
+      )}
+    </div>
+  );
+}
+
+function Receipt({ record, company, onClose }: { record: PayrollRecord; company: string; onClose: () => void }) {
+  const emp = record.employee;
+  const fullName = [emp?.name, emp?.lastName].filter(Boolean).join(" ");
+  const gross = Number(record.grossSalary);
+  const ss = Number(record.socialSecurityDeduction);
+  const tax = Number(record.incomeTaxDeduction);
+  const other = Number(record.otherDeductions ?? 0);
+  const total = Number(record.totalDeductions);
+  const net = Number(record.netSalary);
+
+  return (
+    <div id="recibo-overlay" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, overflow: "auto", padding: "24px", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #recibo-print, #recibo-print * { visibility: visible !important; }
+          #recibo-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; margin: 0 !important; }
+          #recibo-overlay { position: absolute !important; inset: auto !important; background: #fff !important; padding: 0 !important; }
+          .no-print { display: none !important; }
+        }
+      `}</style>
+
+      <div style={{ maxWidth: "760px", width: "100%" }}>
+        <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "12px" }}>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", borderRadius: "8px", padding: "8px 18px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit" }}>Cerrar</button>
+          <button onClick={() => window.print()} style={{ background: "#6366f1", border: "none", color: "#fff", borderRadius: "8px", padding: "8px 20px", cursor: "pointer", fontSize: "13px", fontFamily: "inherit", fontWeight: 600 }}>Imprimir / PDF</button>
+        </div>
+
+        <div id="recibo-print" style={{ background: "#fff", color: "#111", padding: "40px", fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: "13px", lineHeight: 1.5 }}>
+          {/* Cabecera */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #111", paddingBottom: "12px", marginBottom: "16px" }}>
+            <div>
+              <div style={{ fontSize: "18px", fontWeight: 700 }}>{company || "Empresa"}</div>
+              <div style={{ fontSize: "11px", color: "#555" }}>Empresa pagadora</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>Recibo individual de salarios</div>
+              <div style={{ fontSize: "12px", color: "#555" }}>Período: {MESES[record.month - 1]} {record.year}</div>
+            </div>
+          </div>
+
+          {/* Datos trabajador */}
+          <table style={{ width: "100%", fontSize: "12px", marginBottom: "18px", borderCollapse: "collapse" }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, width: "22%", border: "1px solid #ddd" }}>Trabajador/a</td>
+                <td style={{ padding: "4px 8px", border: "1px solid #ddd" }}>{fullName || "—"}</td>
+                <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, width: "12%", border: "1px solid #ddd" }}>N.I.F.</td>
+                <td style={{ padding: "4px 8px", border: "1px solid #ddd" }}>{emp?.documentId || "—"}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, border: "1px solid #ddd" }}>Categoría / Puesto</td>
+                <td style={{ padding: "4px 8px", border: "1px solid #ddd" }} colSpan={3}>{emp?.position || "—"}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* I. Devengos */}
+          <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "6px" }}>I. DEVENGOS</div>
+          <table style={{ width: "100%", fontSize: "12px", borderCollapse: "collapse", marginBottom: "16px" }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>Salario base</td>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right", width: "160px" }}>{money(gross)}</td>
+              </tr>
+              <tr style={{ fontWeight: 700, background: "#f3f4f6" }}>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>A. TOTAL DEVENGADO</td>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right" }}>{money(gross)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* II. Deducciones */}
+          <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "6px" }}>II. DEDUCCIONES</div>
+          <table style={{ width: "100%", fontSize: "12px", borderCollapse: "collapse", marginBottom: "16px" }}>
+            <tbody>
+              <tr>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>Contribución a la Seguridad Social</td>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right", width: "160px" }}>{money(ss)}</td>
+              </tr>
+              {record.calculationDetails?.socialSecurityBreakdown?.map((b, i) => (
+                <tr key={"ss" + i}>
+                  <td style={{ padding: "3px 8px 3px 24px", border: "1px solid #ddd", color: "#666", fontSize: "11px" }}>{b.bracket}</td>
+                  <td style={{ padding: "3px 8px", border: "1px solid #ddd", textAlign: "right", color: "#666", fontSize: "11px" }}>{money(b.amount)}</td>
+                </tr>
+              ))}
+              <tr>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>Impuesto sobre Ingresos Personales</td>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right" }}>{money(tax)}</td>
+              </tr>
+              {record.calculationDetails?.incomeTaxBreakdown?.map((b, i) => (
+                <tr key={"tax" + i}>
+                  <td style={{ padding: "3px 8px 3px 24px", border: "1px solid #ddd", color: "#666", fontSize: "11px" }}>{b.bracket}</td>
+                  <td style={{ padding: "3px 8px", border: "1px solid #ddd", textAlign: "right", color: "#666", fontSize: "11px" }}>{money(b.amount)}</td>
+                </tr>
+              ))}
+              {other > 0 && (
+                <tr>
+                  <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>Otras deducciones</td>
+                  <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right" }}>{money(other)}</td>
+                </tr>
+              )}
+              <tr style={{ fontWeight: 700, background: "#f3f4f6" }}>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd" }}>B. TOTAL A DEDUCIR</td>
+                <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "right" }}>{money(total)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Líquido */}
+          <table style={{ width: "100%", fontSize: "14px", borderCollapse: "collapse", marginBottom: "28px" }}>
+            <tbody>
+              <tr style={{ fontWeight: 700 }}>
+                <td style={{ padding: "9px 8px", border: "2px solid #111" }}>LÍQUIDO TOTAL A PERCIBIR (A − B)</td>
+                <td style={{ padding: "9px 8px", border: "2px solid #111", textAlign: "right", width: "160px" }}>{money(net)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Firma */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "40px", fontSize: "11px", color: "#555" }}>
+            <div>Recibí,<br /><br />_______________________<br />Firma del trabajador/a</div>
+            <div style={{ textAlign: "right" }}>Fecha: ___ / ___ / {record.year}<br /><br />_______________________<br />Sello y firma de la empresa</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

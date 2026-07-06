@@ -92,7 +92,7 @@ export class PayrollService {
 
     return this.db.payrollRecord.findMany({
       where,
-      include: { employee: { select: { id: true, name: true, position: true } } },
+      include: { employee: { select: { id: true, name: true, position: true, lastName: true, documentId: true } } },
       orderBy: [{ year: "desc" }, { month: "desc" }, { employee: { name: "asc" } }],
     });
   }
@@ -148,7 +148,7 @@ export class PayrollService {
         netSalary,
         calculationDetails: details,
       },
-      include: { employee: { select: { id: true, name: true, position: true } } },
+      include: { employee: { select: { id: true, name: true, position: true, lastName: true, documentId: true } } },
     });
   }
 
