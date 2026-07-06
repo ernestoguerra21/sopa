@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, Employee, TimeEntry } from "@/lib/api";
 
 function monthRange(monthStr: string) {
@@ -16,7 +16,6 @@ export function Fichajes({ employees }: { employees: Employee[] }) {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [hours, setHours] = useState("");
 
   const employee = employees.find(e => e.id === employeeId);
   const needsHours = employee?.payRateType === "POR_HORA";
@@ -33,8 +32,12 @@ export function Fichajes({ employees }: { employees: Employee[] }) {
 
   async function addEntry(e: React.FormEvent) {
     e.preventDefault();
-    await api.timeEntries.create({ employeeId, date, hours: needsHours ? parseFloat(hours) || 0 : undefined });
-    setHours("");
+    await api.timeEntries.create({ employeeId, date });
+    load();
+  }
+
+  async function saveFromTimer(hours: number) {
+    await api.timeEntries.create({ employeeId, date: new Date().toISOString().slice(0, 10), hours });
     load();
   }
 
@@ -65,19 +68,17 @@ export function Fichajes({ employees }: { employees: Employee[] }) {
         </p>
       )}
 
-      <form onSubmit={addEntry} className="glass" style={{ padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div>
-          <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Fecha</label>
-          <input type="date" className="glass-input" value={date} onChange={e => setDate(e.target.value)} />
-        </div>
-        {needsHours && (
+      {needsHours ? (
+        <Cronometro key={employeeId} onStop={saveFromTimer} />
+      ) : (
+        <form onSubmit={addEntry} className="glass" style={{ padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap" }}>
           <div>
-            <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Horas</label>
-            <input type="number" step="0.5" min="0" className="glass-input" style={{ maxWidth: "100px" }} value={hours} onChange={e => setHours(e.target.value)} />
+            <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Fecha</label>
+            <input type="date" className="glass-input" value={date} onChange={e => setDate(e.target.value)} />
           </div>
-        )}
-        <button type="submit" className="btn-glow" style={{ height: "42px", padding: "0 18px" }}>Registrar día</button>
-      </form>
+          <button type="submit" className="btn-glow" style={{ height: "42px", padding: "0 18px" }}>Registrar día</button>
+        </form>
+      )}
 
       <div style={{ display: "flex", gap: "16px", marginBottom: "12px", fontSize: "12px", color: "var(--text-muted)" }}>
         <span><strong style={{ color: "var(--text-primary)" }}>{totalDays}</strong> días registrados</span>
@@ -108,3 +109,81 @@ export function Fichajes({ employees }: { employees: Employee[] }) {
     </div>
   );
 }
+
+function formatElapsed(ms: number) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const s = String(totalSeconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
+function Cronometro({ onStop }: { onStop: (hours: number) => void }) {
+  const [running, setRunning] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [, forceTick] = useState(0);
+  const startedAt = useRef<number | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
+
+  function currentElapsed() {
+    return elapsedMs + (running && startedAt.current ? Date.now() - startedAt.current : 0);
+  }
+
+  function play() {
+    startedAt.current = Date.now();
+    setRunning(true);
+    intervalRef.current = setInterval(() => forceTick(t => t + 1), 1000);
+  }
+
+  function pause() {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setElapsedMs(currentElapsed());
+    startedAt.current = null;
+    setRunning(false);
+  }
+
+  function stop() {
+    const finalMs = currentElapsed();
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setRunning(false);
+    startedAt.current = null;
+    setElapsedMs(0);
+    if (finalMs > 0) onStop(Math.round((finalMs / 3600000) * 100) / 100);
+  }
+
+  return (
+    <div className="glass" style={{ padding: "20px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+      <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "1px", fontVariantNumeric: "tabular-nums" }}>
+        {formatElapsed(currentElapsed())}
+      </div>
+      <div style={{ display: "flex", gap: "10px" }}>
+        {!running ? (
+          <CronoBtn onClick={play} color="var(--green)"><IconPlay /></CronoBtn>
+        ) : (
+          <CronoBtn onClick={pause} color="var(--amber)"><IconPause /></CronoBtn>
+        )}
+        <CronoBtn onClick={stop} color="var(--red)" disabled={!running && elapsedMs === 0}><IconStop /></CronoBtn>
+      </div>
+    </div>
+  );
+}
+
+function CronoBtn({ onClick, color, disabled, children }: { onClick: () => void; color: string; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      width: "44px", height: "44px", borderRadius: "12px", cursor: disabled ? "not-allowed" : "pointer",
+      background: "rgba(255,255,255,0.05)", border: `1px solid ${disabled ? "var(--border)" : color}`,
+      color: disabled ? "var(--text-muted)" : color,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      opacity: disabled ? 0.4 : 1, transition: "all 0.15s",
+    }}>
+      {children}
+    </button>
+  );
+}
+
+function IconPlay() { return <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>; }
+function IconPause() { return <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>; }
+function IconStop() { return <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>; }
