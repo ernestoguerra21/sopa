@@ -49,6 +49,7 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.position.trim()) return;
+    if (!form.documentId?.trim()) { setError("El carnet de identidad es obligatorio"); return; }
     setSaving(true);
     setError("");
     try {
@@ -85,7 +86,7 @@ export function EmployeeFormModal({ employee, employees, departments, onClose, o
               <Field label="Apellidos"><input className="glass-input" value={form.lastName} onChange={e => set("lastName", e.target.value)} /></Field>
             </Row>
             <Row>
-              <Field label="Documento identidad"><input className="glass-input" value={form.documentId} onChange={e => set("documentId", e.target.value)} /></Field>
+              <Field label="Carnet de identidad" required><input className="glass-input" value={form.documentId} onChange={e => set("documentId", e.target.value)} /></Field>
               <Field label="Teléfono"><input className="glass-input" value={form.phone} onChange={e => set("phone", e.target.value)} /></Field>
             </Row>
             <Row>

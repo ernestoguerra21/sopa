@@ -291,10 +291,15 @@ function Receipt({ record, company, onClose }: { record: PayrollRecord; company:
     <div id="recibo-overlay" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, overflow: "auto", padding: "24px", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
       <style>{`
         @media print {
+          html, body { background: #fff !important; }
           body * { visibility: hidden !important; }
-          #recibo-print, #recibo-print * { visibility: visible !important; }
-          #recibo-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; margin: 0 !important; }
-          #recibo-overlay { position: absolute !important; inset: auto !important; background: #fff !important; padding: 0 !important; }
+          #recibo-print, #recibo-print * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #recibo-print { position: absolute; left: 0; top: 0; width: 100%; background: #fff !important; box-shadow: none !important; margin: 0 !important; }
+          #recibo-overlay { position: absolute !important; inset: auto !important; left: 0 !important; top: 0 !important; width: 100% !important; background: #fff !important; padding: 0 !important; }
           .no-print { display: none !important; }
         }
       `}</style>
@@ -324,7 +329,7 @@ function Receipt({ record, company, onClose }: { record: PayrollRecord; company:
               <tr>
                 <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, width: "22%", border: "1px solid #ddd" }}>Trabajador/a</td>
                 <td style={{ padding: "4px 8px", border: "1px solid #ddd" }}>{fullName || "—"}</td>
-                <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, width: "12%", border: "1px solid #ddd" }}>N.I.F.</td>
+                <td style={{ padding: "4px 8px", background: "#f3f4f6", fontWeight: 600, width: "16%", border: "1px solid #ddd" }}>Carnet de identidad</td>
                 <td style={{ padding: "4px 8px", border: "1px solid #ddd" }}>{emp?.documentId || "—"}</td>
               </tr>
               <tr>

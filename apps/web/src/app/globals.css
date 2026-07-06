@@ -393,6 +393,12 @@ body {
   }
 }
 
+/* ─── Impresión: fondo blanco, sin blobs del tema oscuro ─── */
+@media print {
+  html, body { background: #fff !important; color: #111 !important; }
+  .bg-scene, body::before, body::after { display: none !important; }
+}
+
 .app-sidebar {
   position: relative;
   z-index: 10;
