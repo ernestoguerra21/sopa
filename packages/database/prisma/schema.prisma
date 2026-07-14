@@ -28,6 +28,7 @@ model Tenant {
   timeEntries TimeEntry[]
   payrollRecords PayrollRecord[]
   timeOffs    TimeOff[]
+  stockMovements StockMovement[]
   organization Organization?
 }
 
@@ -50,9 +51,37 @@ model InventoryItem {
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   business    Business  @relation(fields: [businessId], references: [id])
   orderItems  PurchaseOrderItem[]
+  movements   StockMovement[]
 
   @@index([tenantId])
   @@index([businessId])
+}
+
+model StockMovement {
+  id              String            @id @default(cuid())
+  inventoryItemId String
+  tenantId        String
+  businessId      String
+  type            StockMovementType
+  delta           Float             // positivo entra, negativo sale
+  note            String?
+  createdAt       DateTime          @default(now())
+
+  item     InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  business Business      @relation(fields: [businessId], references: [id])
+
+  @@index([inventoryItemId, createdAt])
+  @@index([businessId])
+  @@index([tenantId])
+}
+
+enum StockMovementType {
+  ENTRADA
+  SALIDA
+  MERMA
+  AJUSTE
+  COMPRA
 }
 
 model User {
@@ -109,6 +138,7 @@ model Business {
   timeEntries  TimeEntry[]
   payrollRecords PayrollRecord[]
   timeOffs     TimeOff[]
+  stockMovements StockMovement[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])

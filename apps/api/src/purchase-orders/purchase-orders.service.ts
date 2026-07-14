@@ -35,19 +35,29 @@ export class PurchaseOrdersService {
   async markReceived(id: string, businessId: string) {
     const order = await this.db.purchaseOrder.findFirst({
       where: { id, businessId },
-      include: { items: true },
+      include: { items: true, supplier: true },
     });
     if (!order || order.status !== "PENDING") return { count: 0 };
 
     return this.db.$transaction([
       ...order.items
         .filter(i => i.inventoryItemId)
-        .map(i =>
+        .flatMap(i => [
           this.db.inventoryItem.update({
             where: { id: i.inventoryItemId! },
             data: { quantity: { increment: i.quantity } },
           }),
-        ),
+          this.db.stockMovement.create({
+            data: {
+              inventoryItemId: i.inventoryItemId!,
+              tenantId: order.tenantId,
+              businessId,
+              type: "COMPRA",
+              delta: i.quantity,
+              note: `Orden de ${order.supplier?.name ?? "proveedor"}`,
+            },
+          }),
+        ]),
       this.db.purchaseOrder.update({ where: { id }, data: { status: "RECEIVED" } }),
     ]);
   }

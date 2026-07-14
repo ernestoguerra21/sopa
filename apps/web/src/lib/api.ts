@@ -86,6 +86,9 @@ export const api = {
     update: (id: string, data: Partial<Pick<InventoryItem, "name" | "unit" | "quantity" | "minQuantity">>) =>
       request(`/inventory/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     remove: (id: string) => request(`/inventory/${id}`, { method: "DELETE" }),
+    movements: (id: string) => request<StockMovement[]>(`/inventory/${id}/movements`),
+    createMovement: (id: string, data: { type: StockMovement["type"]; quantity: number; note?: string }) =>
+      request<InventoryItem>(`/inventory/${id}/movements`, { method: "POST", body: JSON.stringify(data) }),
   },
   suppliers: {
     list: () => request<Supplier[]>("/suppliers"),
@@ -234,6 +237,14 @@ export interface InventoryItem {
   unit: string;
   quantity: number;
   minQuantity: number;
+  createdAt: string;
+}
+
+export interface StockMovement {
+  id: string;
+  type: "ENTRADA" | "SALIDA" | "MERMA" | "AJUSTE" | "COMPRA";
+  delta: number;
+  note?: string | null;
   createdAt: string;
 }
 

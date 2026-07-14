@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { api, InventoryItem } from "@/lib/api";
+import { api, InventoryItem, StockMovement } from "@/lib/api";
+
+const MOVEMENT_LABEL: Record<StockMovement["type"], string> = {
+  ENTRADA: "Entrada",
+  SALIDA: "Salida",
+  MERMA: "Merma",
+  AJUSTE: "Ajuste",
+  COMPRA: "Compra",
+};
 
 export default function InventarioPage() {
   const [items,    setItems]    = useState<InventoryItem[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [creating, setCreating] = useState(false);
   const [form,     setForm]     = useState({ name: "", unit: "uds", quantity: "", minQuantity: "" });
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   async function load() {
     const data = await api.inventory.list();
@@ -114,7 +123,8 @@ export default function InventarioPage() {
           {items.map((item, i) => {
             const low = item.quantity <= item.minQuantity;
             return (
-              <div key={item.id} className={`glass inv-row animate-fade-up delay-${Math.min(i, 5)}`}
+              <div key={item.id}>
+              <div className={`glass inv-row animate-fade-up delay-${Math.min(i, 5)}`}
                 style={{
                   padding: "14px 16px",
                   ...(low ? { borderColor: "rgba(245,158,11,0.3)" } : {}),
@@ -127,10 +137,11 @@ export default function InventarioPage() {
                 }} />
 
                 {/* Body */}
-                <div className="inv-body">
+                <div className="inv-body" style={{ cursor: "pointer" }} onClick={() => setExpanded(expanded === item.id ? null : item.id)}>
                   <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)" }}>{item.name}</div>
                   <div style={{ fontSize: "12px", color: low ? "var(--amber)" : "var(--text-muted)", marginTop: "2px" }}>
                     {low ? `Bajo mínimo (${fmtQty(item.minQuantity)} ${item.unit})` : `Mínimo: ${fmtQty(item.minQuantity)} ${item.unit}`}
+                    <span style={{ marginLeft: "8px", color: "var(--accent-soft)" }}>{expanded === item.id ? "▴ ocultar" : "▾ movimientos"}</span>
                   </div>
                 </div>
 
@@ -156,8 +167,94 @@ export default function InventarioPage() {
                   </svg>
                 </button>
               </div>
+              {expanded === item.id && <MovementsPanel item={item} onDone={load} />}
+              </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MovementsPanel({ item, onDone }: { item: InventoryItem; onDone: () => void }) {
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [type, setType] = useState<StockMovement["type"]>("SALIDA");
+  const [qty, setQty] = useState("");
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function loadMovements() {
+    const data = await api.inventory.movements(item.id);
+    setMovements(data);
+    setLoading(false);
+  }
+  useEffect(() => { loadMovements(); }, [item.id]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = parseFloat(qty);
+    if (!q || q <= 0) return;
+    setSaving(true);
+    setError("");
+    try {
+      await api.inventory.createMovement(item.id, { type, quantity: q, note: note || undefined });
+      setQty(""); setNote("");
+      await loadMovements();
+      onDone();
+    } catch (err: any) {
+      setError(err.message || "Error al registrar");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="glass animate-fade-in" style={{ marginTop: "4px", padding: "14px 16px", borderColor: "rgba(249,115,22,0.2)" }}>
+      <form onSubmit={submit} className="form-row" style={{ alignItems: "flex-end", marginBottom: "14px" }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Tipo</label>
+          <select className="glass-input" value={type} onChange={e => setType(e.target.value as StockMovement["type"])}>
+            <option value="SALIDA">Salida (uso)</option>
+            <option value="MERMA">Merma / desperdicio</option>
+            <option value="ENTRADA">Entrada</option>
+          </select>
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Cantidad ({item.unit})</label>
+          <input type="number" step="0.01" min="0.01" className="glass-input" value={qty} onChange={e => setQty(e.target.value)} required />
+        </div>
+        <div style={{ flex: 2 }}>
+          <label style={{ display: "block", fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px" }}>Nota (opcional)</label>
+          <input className="glass-input" value={note} onChange={e => setNote(e.target.value)} placeholder="p. ej. caducado, rotura..." />
+        </div>
+        <button type="submit" disabled={saving} className="btn-glow" style={{ height: "42px", padding: "0 18px" }}>
+          {saving ? "..." : "Registrar"}
+        </button>
+      </form>
+
+      {error && <p style={{ fontSize: "12px", color: "#fca5a5", marginBottom: "10px" }}>{error}</p>}
+
+      {loading ? (
+        <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Cargando historial...</p>
+      ) : movements.length === 0 ? (
+        <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Sin movimientos registrados.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "220px", overflowY: "auto" }}>
+          {movements.map(m => (
+            <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 8px", borderRadius: "8px", background: "rgba(255,255,255,0.02)", fontSize: "12px" }}>
+              <span style={{ minWidth: "60px", fontWeight: 600, color: m.delta < 0 ? (m.type === "MERMA" ? "var(--red)" : "var(--amber)") : "var(--green)" }}>
+                {m.delta > 0 ? "+" : ""}{m.delta} {item.unit}
+              </span>
+              <span style={{ minWidth: "60px", color: "var(--text-secondary)" }}>{MOVEMENT_LABEL[m.type]}</span>
+              <span style={{ flex: 1, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.note ?? ""}</span>
+              <span style={{ color: "var(--text-muted)" }}>{fmtDate(m.createdAt)}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

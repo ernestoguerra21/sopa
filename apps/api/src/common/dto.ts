@@ -26,6 +26,26 @@ export class UpdateTimeEntryDto {
   @IsOptional() @IsNumber() @Min(0) hours?: number;
 }
 
+export class CreateInventoryItemDto {
+  @IsString() name: string;
+  @IsString() unit: string;
+  @IsOptional() @IsNumber() @Min(0) quantity?: number;
+  @IsOptional() @IsNumber() @Min(0) minQuantity?: number;
+}
+
+export class UpdateInventoryItemDto {
+  @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsString() unit?: string;
+  @IsOptional() @IsNumber() @Min(0) quantity?: number;
+  @IsOptional() @IsNumber() @Min(0) minQuantity?: number;
+}
+
+export class CreateStockMovementDto {
+  @IsIn(["ENTRADA", "SALIDA", "MERMA", "AJUSTE", "COMPRA"]) type: "ENTRADA" | "SALIDA" | "MERMA" | "AJUSTE" | "COMPRA";
+  @IsNumber() @Min(0.01) quantity: number;
+  @IsOptional() @IsString() note?: string;
+}
+
 export class CreateTimeOffDto {
   @IsString() employeeId: string;
   @IsIn(["VACATION", "SICK_LEAVE", "PERSONAL", "UNPAID"]) type: "VACATION" | "SICK_LEAVE" | "PERSONAL" | "UNPAID";
